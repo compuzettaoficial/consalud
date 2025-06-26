@@ -101,4 +101,10 @@ window.buscarRecetas = () => {
   mostrarRecetas(q, cat);
 };
 
+window.guardarReceta = guardarReceta;
+window.buscarRecetas = buscarRecetas;
+window.eliminarReceta = eliminarReceta;
+window.editarReceta = editarReceta;
+
 mostrarRecetas();
+
