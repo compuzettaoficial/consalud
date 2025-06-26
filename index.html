@@ -13,7 +13,18 @@
   </header>
 
   <main>
-  <input type="text" id="buscador" placeholder="🔍 Buscar receta o ingrediente...">
+    <section id="formulario">
+      <h2>➕ Agregar nueva receta</h2>
+      <form id="recetaForm">
+        <input type="text" id="titulo" placeholder="Título" required>
+        <input type="text" id="ingredientes" placeholder="Ingredientes (separados por coma)" required>
+        <input type="text" id="tiempo" placeholder="Tiempo de preparación" required>
+        <input type="text" id="imagen" placeholder="URL de imagen" required>
+        <textarea id="pasos" placeholder="Pasos de preparación" required></textarea>
+        <button type="submit">Guardar Receta</button>
+      </form>
+    </section>
+    <input type="text" id="buscador" placeholder="🔍 Buscar receta o ingrediente...">
     <div id="recetas-container" class="recetas-grid"></div>
   </main>
 
@@ -30,6 +41,39 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_DOMINIO.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_BUCKET.appspot.com",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+  
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBcJ4tbucMLF3lTuDne5cyin4oyoVhTfSs",
+    authDomain: "consalud-recetas.firebaseapp.com",
+    projectId: "consalud-recetas",
+    storageBucket: "consalud-recetas.firebasestorage.app",
+    messagingSenderId: "477690744464",
+    appId: "1:477690744464:web:597172e85fd29549fd9215"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+<script src="app.js"></script>
+
 </body>
 </html>

@@ -1,24 +1,15 @@
 let recetasGlobal = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('recetas.json')
-    .then(res => res.json())
-    .then(data => {
-      recetasGlobal = data;
-      renderRecetas(data);
-    });
+  cargarRecetasFirebase();
 
   const modal = document.getElementById('modal');
   const closeBtn = document.querySelector('.close-btn');
 
-  closeBtn.addEventListener('click', () => {
-    modal.classList.add('hidden');
-  });
+  closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
 
   window.addEventListener('click', e => {
-    if (e.target === modal) {
-      modal.classList.add('hidden');
-    }
+    if (e.target === modal) modal.classList.add('hidden');
   });
 
   const buscador = document.getElementById('buscador');
@@ -44,16 +35,13 @@ function renderRecetas(recetas) {
   recetas.forEach(receta => {
     const card = document.createElement('div');
     card.className = 'card';
-
     card.innerHTML = `
       <img src="${receta.imagen}" alt="${receta.titulo}">
       <div class="card-content">
         <h3>${receta.titulo}</h3>
         <p>⏱ ${receta.tiempo}</p>
         <button onclick='verDetalle(${JSON.stringify(receta)})'>Ver más</button>
-      </div>
-    `;
-
+      </div>`;
     container.appendChild(card);
   });
 }
@@ -63,7 +51,6 @@ function verDetalle(receta) {
   document.getElementById('modal-img').src = receta.imagen;
   document.getElementById('modal-tiempo').textContent = receta.tiempo;
   document.getElementById('modal-pasos').textContent = receta.pasos;
-
   const lista = document.getElementById('modal-ingredientes');
   lista.innerHTML = '';
   receta.ingredientes.forEach(item => {
@@ -71,6 +58,32 @@ function verDetalle(receta) {
     li.textContent = item;
     lista.appendChild(li);
   });
-
   document.getElementById('modal').classList.remove('hidden');
+}
+
+document.getElementById("recetaForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const nuevaReceta = {
+    titulo: document.getElementById("titulo").value.trim(),
+    ingredientes: document.getElementById("ingredientes").value.split(",").map(i => i.trim()),
+    tiempo: document.getElementById("tiempo").value.trim(),
+    imagen: document.getElementById("imagen").value.trim(),
+    pasos: document.getElementById("pasos").value.trim()
+  };
+  try {
+    await db.collection("recetas").add(nuevaReceta);
+    alert("Receta guardada exitosamente ✅");
+    this.reset();
+    cargarRecetasFirebase();
+  } catch (error) {
+    console.error("Error al guardar receta:", error);
+    alert("Error al guardar la receta ❌");
+  }
+});
+
+async function cargarRecetasFirebase() {
+  const snapshot = await db.collection("recetas").get();
+  const datos = snapshot.docs.map(doc => doc.data());
+  recetasGlobal = datos;
+  renderRecetas(recetasGlobal);
 }
