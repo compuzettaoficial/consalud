@@ -1,5 +1,6 @@
 let recetas = JSON.parse(localStorage.getItem('recetas')) || [];
 let planificador = JSON.parse(localStorage.getItem('planificador')) || [];
+let editandoId = null;
 
 function guardarReceta() {
   const titulo = document.getElementById('titulo').value.trim();
@@ -14,18 +15,29 @@ function guardarReceta() {
     return;
   }
 
-  const nuevaReceta = {
-    id: Date.now(),
-    titulo,
-    ingredientes,
-    tiempo,
-    imagen,
-    preparacion,
-    categoria,
-    favorito: false
-  };
+  if (editandoId) {
+    const index = recetas.findIndex(r => r.id === editandoId);
+    if (index !== -1) {
+      recetas[index] = {
+        ...recetas[index],
+        titulo, ingredientes, tiempo, imagen, preparacion, categoria
+      };
+    }
+    editandoId = null;
+  } else {
+    const nuevaReceta = {
+      id: Date.now(),
+      titulo,
+      ingredientes,
+      tiempo,
+      imagen,
+      preparacion,
+      categoria,
+      favorito: false
+    };
+    recetas.push(nuevaReceta);
+  }
 
-  recetas.push(nuevaReceta);
   localStorage.setItem('recetas', JSON.stringify(recetas));
   document.getElementById('formulario').style.display = 'none';
   limpiarFormulario();
@@ -49,7 +61,7 @@ function mostrarRecetas() {
   const filtroCategoria = document.getElementById('filtroCategoria').value;
   const verFavoritos = document.getElementById('verFavoritos').checked;
 
-  let recetasFiltradas = recetas.filter(r =>
+  const recetasFiltradas = recetas.filter(r =>
     (!textoBusqueda || r.titulo.toLowerCase().includes(textoBusqueda) || r.ingredientes.toLowerCase().includes(textoBusqueda)) &&
     (!filtroCategoria || r.categoria === filtroCategoria) &&
     (!verFavoritos || r.favorito)
@@ -83,6 +95,7 @@ function editarReceta(id) {
   const receta = recetas.find(r => r.id === id);
   if (!receta) return;
 
+  editandoId = id;
   document.getElementById('titulo').value = receta.titulo;
   document.getElementById('ingredientes').value = receta.ingredientes;
   document.getElementById('tiempo').value = receta.tiempo;
@@ -90,8 +103,6 @@ function editarReceta(id) {
   document.getElementById('preparacion').value = receta.preparacion;
   document.getElementById('categoria').value = receta.categoria;
   document.getElementById('formulario').style.display = 'block';
-
-  eliminarReceta(id);
 }
 
 function eliminarReceta(id) {
@@ -117,11 +128,14 @@ function buscarRecetas() {
 
 function agendar(id) {
   const receta = recetas.find(r => r.id === id);
-  if (receta && !planificador.find(p => p.id === id)) {
-    planificador.push(receta);
-    localStorage.setItem('planificador', JSON.stringify(planificador));
-    mostrarPlanificador();
-  }
+  if (!receta) return;
+
+  const dia = prompt("¿Para qué día deseas agendar esta receta? (Ej: Lunes, Martes...)");
+  if (!dia) return;
+
+  planificador.push({ ...receta, dia });
+  localStorage.setItem('planificador', JSON.stringify(planificador));
+  mostrarPlanificador();
 }
 
 function cancelarAgenda(id) {
@@ -144,6 +158,7 @@ function mostrarPlanificador() {
     card.className = 'card';
     card.innerHTML = `
       <h3>${r.titulo}</h3>
+      <p>📅 Día: ${r.dia}</p>
       <p>⏱ ${r.tiempo}</p>
       <button onclick="cancelarAgenda(${r.id})">❌ Quitar del plan</button>
     `;
