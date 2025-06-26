@@ -19,11 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderRecetas(recetas) {
   const container = document.getElementById('recetas-container');
-
   recetas.forEach(receta => {
     const card = document.createElement('div');
     card.className = 'card';
-
     card.innerHTML = `
       <img src="${receta.imagen}" alt="${receta.titulo}">
       <div class="card-content">
@@ -32,7 +30,6 @@ function renderRecetas(recetas) {
         <button onclick='verDetalle(${JSON.stringify(receta)})'>Ver más</button>
       </div>
     `;
-
     container.appendChild(card);
   });
 }
@@ -42,7 +39,6 @@ function verDetalle(receta) {
   document.getElementById('modal-img').src = receta.imagen;
   document.getElementById('modal-tiempo').textContent = receta.tiempo;
   document.getElementById('modal-pasos').textContent = receta.pasos;
-
   const lista = document.getElementById('modal-ingredientes');
   lista.innerHTML = '';
   receta.ingredientes.forEach(item => {
@@ -50,6 +46,5 @@ function verDetalle(receta) {
     li.textContent = item;
     lista.appendChild(li);
   });
-
   document.getElementById('modal').classList.remove('hidden');
 }
