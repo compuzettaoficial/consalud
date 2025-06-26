@@ -1,7 +1,12 @@
+let recetasGlobal = [];
+
 document.addEventListener('DOMContentLoaded', () => {
   fetch('recetas.json')
     .then(res => res.json())
-    .then(data => renderRecetas(data));
+    .then(data => {
+      recetasGlobal = data;
+      renderRecetas(data);
+    });
 
   const modal = document.getElementById('modal');
   const closeBtn = document.querySelector('.close-btn');
@@ -15,13 +20,31 @@ document.addEventListener('DOMContentLoaded', () => {
       modal.classList.add('hidden');
     }
   });
+
+  const buscador = document.getElementById('buscador');
+  buscador.addEventListener('input', e => {
+    const valor = e.target.value.toLowerCase();
+    const filtradas = recetasGlobal.filter(r =>
+      r.titulo.toLowerCase().includes(valor) ||
+      r.ingredientes.join(',').toLowerCase().includes(valor)
+    );
+    renderRecetas(filtradas);
+  });
 });
 
 function renderRecetas(recetas) {
   const container = document.getElementById('recetas-container');
+  container.innerHTML = '';
+
+  if (recetas.length === 0) {
+    container.innerHTML = "<p style='text-align:center; color: #888;'>No se encontraron recetas.</p>";
+    return;
+  }
+
   recetas.forEach(receta => {
     const card = document.createElement('div');
     card.className = 'card';
+
     card.innerHTML = `
       <img src="${receta.imagen}" alt="${receta.titulo}">
       <div class="card-content">
@@ -30,6 +53,7 @@ function renderRecetas(recetas) {
         <button onclick='verDetalle(${JSON.stringify(receta)})'>Ver más</button>
       </div>
     `;
+
     container.appendChild(card);
   });
 }
@@ -39,6 +63,7 @@ function verDetalle(receta) {
   document.getElementById('modal-img').src = receta.imagen;
   document.getElementById('modal-tiempo').textContent = receta.tiempo;
   document.getElementById('modal-pasos').textContent = receta.pasos;
+
   const lista = document.getElementById('modal-ingredientes');
   lista.innerHTML = '';
   receta.ingredientes.forEach(item => {
@@ -46,5 +71,6 @@ function verDetalle(receta) {
     li.textContent = item;
     lista.appendChild(li);
   });
+
   document.getElementById('modal').classList.remove('hidden');
 }
