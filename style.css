@@ -105,3 +105,7 @@ button:hover {
 .close-btn:hover {
   color: #333;
 }
+
+.hidden {
+  display: none;
+}
