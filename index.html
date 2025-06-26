@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recetas Saludables</title>
+  <title>🍏 Recetas Saludables</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,39 +11,42 @@
     <h1>🍏 Recetas Saludables</h1>
     <p>Descubre platos fáciles, ricos y buenos para tu cuerpo.</p>
 
-    <div class="form">
-      <h2 id="form-title">➕ Agregar nueva receta</h2>
-      <input type="text" id="titulo" placeholder="Título" />
-      <input type="text" id="ingredientes" placeholder="Ingredientes (separados por coma)" />
-      <input type="text" id="tiempo" placeholder="Tiempo de preparación" />
-      <input type="text" id="imagen" placeholder="URL de imagen" />
-      <select id="categoria">
-        <option value="">Selecciona categoría</option>
+    <button class="agregar-btn" onclick="document.getElementById('formulario').style.display='block'">➕ Agregar nueva receta</button>
+
+    <div id="formulario" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('formulario').style.display='none'">&times;</span>
+        <h2>Agregar Receta</h2>
+        <input type="text" id="titulo" placeholder="Título" />
+        <input type="text" id="ingredientes" placeholder="Ingredientes (separados por coma)" />
+        <input type="text" id="tiempo" placeholder="Tiempo de preparación" />
+        <input type="text" id="imagen" placeholder="URL de imagen" />
+        <textarea id="preparacion" placeholder="Pasos de preparación"></textarea>
+        <select id="categoria">
+          <option value="">Sin categoría</option>
+          <option value="Desayuno">Desayuno</option>
+          <option value="Almuerzo">Almuerzo</option>
+          <option value="Cena">Cena</option>
+          <option value="Snack">Snack</option>
+        </select>
+        <button onclick="guardarReceta()">Guardar Receta</button>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <input type="text" id="busqueda" placeholder="🔍 Buscar receta o ingrediente..." oninput="buscarRecetas()" />
+      <select id="filtroCategoria" onchange="buscarRecetas()">
+        <option value="">Todas las categorías</option>
         <option value="Desayuno">Desayuno</option>
         <option value="Almuerzo">Almuerzo</option>
         <option value="Cena">Cena</option>
         <option value="Snack">Snack</option>
-        <option value="Postre">Postre</option>
-        <option value="Bebida">Bebida</option>
       </select>
-      <textarea id="preparacion" placeholder="Pasos de preparación"></textarea>
-      <button onclick="guardarReceta()">💾 Guardar Receta</button>
+      <label><input type="checkbox" id="verFavoritos" onchange="buscarRecetas()"> Ver solo favoritos ❤️</label>
     </div>
-
-    <input type="text" id="busqueda" placeholder="🔍 Buscar receta o ingrediente..." oninput="buscarRecetas()" />
-    <select id="filtroCategoria" onchange="buscarRecetas()">
-      <option value="">Todas las categorías</option>
-      <option value="Desayuno">Desayuno</option>
-      <option value="Almuerzo">Almuerzo</option>
-      <option value="Cena">Cena</option>
-      <option value="Snack">Snack</option>
-      <option value="Postre">Postre</option>
-      <option value="Bebida">Bebida</option>
-    </select>
 
     <div id="recetas"></div>
   </div>
-
   <script type="module" src="app.js"></script>
 </body>
 </html>
