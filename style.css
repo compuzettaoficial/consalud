@@ -1,81 +1,88 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f5f4fa;
+  background: #f7f4fc;
   margin: 0;
   padding: 0;
-  color: #333;
 }
+
 .container {
   max-width: 800px;
   margin: auto;
   padding: 20px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
 }
-.agregar-btn {
+
+h1, h2 {
+  color: #6b4b9a;
+}
+
+button {
   background-color: #6b4b9a;
   color: white;
-  padding: 10px 20px;
   border: none;
-  border-radius: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 20px;
 }
-.agregar-btn:hover {
-  background-color: #563b82;
+
+button:hover {
+  background-color: #563d82;
 }
+
+input, textarea, select {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.receta {
+  border: 1px solid #e8e5f0;
+  background: #faf8fc;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.receta img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
 .modal {
   display: none;
   position: fixed;
-  top: 0; left: 0;
+  z-index: 99;
+  left: 0; top: 0;
   width: 100%; height: 100%;
   background-color: rgba(0,0,0,0.5);
 }
+
 .modal-content {
-  background-color: #fff;
+  background: white;
   margin: 10% auto;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 8px;
+  width: 90%;
   max-width: 500px;
   position: relative;
 }
-.modal-content input,
-.modal-content textarea,
-.modal-content select {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-}
-.modal-content button {
-  background-color: #6b4b9a;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  width: 100%;
-  cursor: pointer;
-}
-.modal-content button:hover {
-  background-color: #563b82;
-}
+
 .close {
   position: absolute;
   top: 10px;
   right: 20px;
-  font-size: 24px;
+  font-size: 22px;
   cursor: pointer;
+  color: #999;
 }
-.card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  padding: 16px;
-  margin: 10px 0;
-}
-.card img {
-  max-width: 100%;
-  border-radius: 10px;
-}
-.filtros input,
-.filtros select {
-  padding: 8px;
-  margin-right: 10px;
+
+.filtros {
+  margin: 20px 0;
 }
