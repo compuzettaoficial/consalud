@@ -1,35 +1,43 @@
 body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #fefdf8;
+  margin: 0;
+  padding: 0;
+  background: #f6f6f9;
   color: #333;
-  line-height: 1.6;
-  padding: 20px;
 }
 header {
+  background: #6b4b9a;
+  color: white;
+  padding: 1em;
   text-align: center;
-  margin-bottom: 30px;
 }
-header h1 {
-  color: #4caf50;
-  font-size: 2.5rem;
+form input, form textarea {
+  display: block;
+  width: 100%;
+  margin: 0.5em 0;
+  padding: 0.6em;
+  border-radius: 10px;
+  border: 1px solid #ccc;
 }
-header p {
-  color: #777;
+form button {
+  background: #6b4b9a;
+  color: white;
+  padding: 0.7em 1.5em;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
 }
 .recetas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 1rem;
+  padding: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 .card {
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
   overflow: hidden;
-  transition: transform 0.2s ease-in-out;
-}
-.card:hover {
-  transform: scale(1.02);
 }
 .card img {
   width: 100%;
@@ -37,112 +45,31 @@ header p {
   object-fit: cover;
 }
 .card-content {
-  padding: 15px;
+  padding: 1em;
 }
-.card-content h3 {
-  color: #4caf50;
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-}
-.card-content p {
-  font-size: 0.9rem;
-  color: #666;
-}
-button {
-  background-color: #ff7043;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 10px;
-  margin-top: 10px;
-  cursor: pointer;
-  font-weight: bold;
-}
-button:hover {
-  background-color: #f4511e;
+.card-content button {
+  margin: 0.3em;
 }
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
   display: flex;
   justify-content: center;
   align-items: center;
 }
+.modal.hidden { display: none; }
 .modal-content {
-  background-color: #fff;
-  padding: 25px;
-  border-radius: 14px;
+  background: white;
+  padding: 1.5em;
+  border-radius: 10px;
   width: 90%;
   max-width: 600px;
-  position: relative;
-  overflow-y: auto;
-  max-height: 90vh;
-}
-.modal-content img {
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 15px;
 }
 .close-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-  font-size: 24px;
-  color: #888;
+  float: right;
   cursor: pointer;
-}
-.close-btn:hover {
-  color: #333;
-}
-.hidden {
-  display: none;
-}
-#buscador {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto 20px auto;
-  display: block;
-  padding: 10px 15px;
-  font-size: 1rem;
-  border: 2px solid #ccc;
-  border-radius: 12px;
-  outline: none;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
-}
-#formulario {
-  max-width: 600px;
-  margin: 0 auto 40px auto;
-  background: #fffaf3;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-#formulario h2 {
-  color: #4caf50;
-  margin-bottom: 15px;
-}
-#formulario input,
-#formulario textarea {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-#formulario button {
-  background: #4caf50;
-  color: white;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-}
-#formulario button:hover {
-  background: #388e3c;
+  font-size: 1.2em;
+  color: red;
 }
