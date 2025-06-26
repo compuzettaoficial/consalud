@@ -1,118 +1,121 @@
-let recetas = JSON.parse(localStorage.getItem("recetas")) || [];
-let favoritos = JSON.parse(localStorage.getItem("favoritos")) || {};
-let planificador = JSON.parse(localStorage.getItem("planificador")) || {};
+const recetas = JSON.parse(localStorage.getItem("recetas")) || [];
+const favoritos = JSON.parse(localStorage.getItem("favoritos")) || {};
+const planificador = JSON.parse(localStorage.getItem("planificador")) || {};
 
-function guardarReceta() {
-  const receta = {
-    id: Date.now(),
-    titulo: document.getElementById("titulo").value,
-    ingredientes: document.getElementById("ingredientes").value,
-    tiempo: document.getElementById("tiempo").value,
-    imagen: document.getElementById("imagen").value,
-    preparacion: document.getElementById("preparacion").value,
-    categoria: document.getElementById("categoria").value
-  };
-  recetas.push(receta);
+function guardarLocal() {
   localStorage.setItem("recetas", JSON.stringify(recetas));
-  limpiarFormulario();
-  document.getElementById("formulario").style.display = "none";
-  buscarRecetas();
+  localStorage.setItem("favoritos", JSON.stringify(favoritos));
+  localStorage.setItem("planificador", JSON.stringify(planificador));
 }
 
-function limpiarFormulario() {
-  document.getElementById("titulo").value = "";
-  document.getElementById("ingredientes").value = "";
-  document.getElementById("tiempo").value = "";
-  document.getElementById("imagen").value = "";
-  document.getElementById("preparacion").value = "";
+function guardarReceta() {
+  const titulo = document.getElementById("titulo").value;
+  const ingredientes = document.getElementById("ingredientes").value;
+  const tiempo = document.getElementById("tiempo").value;
+  const imagen = document.getElementById("imagen").value;
+  const preparacion = document.getElementById("preparacion").value;
+  const categoria = document.getElementById("categoria").value;
+
+  if (!titulo || !ingredientes || !tiempo || !preparacion) {
+    alert("Por favor, completa todos los campos obligatorios.");
+    return;
+  }
+
+  const nueva = {
+    id: Date.now(),
+    titulo,
+    ingredientes,
+    tiempo,
+    imagen,
+    preparacion,
+    categoria
+  };
+
+  recetas.push(nueva);
+  guardarLocal();
+  mostrarRecetas();
+  document.getElementById("formulario").style.display = "none";
+  document.querySelectorAll("#formulario input, #formulario textarea").forEach(e => e.value = "");
   document.getElementById("categoria").value = "";
 }
 
-function buscarRecetas() {
-  const texto = document.getElementById("busqueda").value.toLowerCase();
-  const categoria = document.getElementById("filtroCategoria").value;
-  const soloFavoritos = document.getElementById("verFavoritos").checked;
+function mostrarRecetas() {
   const contenedor = document.getElementById("recetas");
   contenedor.innerHTML = "";
+  const filtro = document.getElementById("busqueda")?.value?.toLowerCase() || "";
+  const categoriaFiltro = document.getElementById("filtroCategoria")?.value || "";
+  const soloFav = document.getElementById("verFavoritos")?.checked;
 
-  recetas.filter(r => {
-    return (!texto || r.titulo.toLowerCase().includes(texto) || r.ingredientes.toLowerCase().includes(texto)) &&
-           (!categoria || r.categoria === categoria) &&
-           (!soloFavoritos || favoritos[r.id]);
-  }).forEach(r => {
+  const filtradas = recetas.filter(r => {
+    const coincideTexto = r.titulo.toLowerCase().includes(filtro) || r.ingredientes.toLowerCase().includes(filtro);
+    const coincideCat = !categoriaFiltro || r.categoria === categoriaFiltro;
+    const coincideFav = !soloFav || favoritos[r.id];
+    return coincideTexto && coincideCat && coincideFav;
+  });
+
+  for (const r of filtradas) {
     const div = document.createElement("div");
     div.className = "receta";
-    div.innerHTML = `
-      <h3>${r.titulo} ${favoritos[r.id] ? "❤️" : ""}</h3>
-      <p>⏱ ${r.tiempo}</p>
-      ${r.imagen ? `<img src="${r.imagen}" alt="${r.titulo}">` : ""}
-      <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
-      <p><strong>Preparación:</strong> ${r.preparacion}</p>
-      <button onclick="agendar('${r.id}')">📅 Agendar</button>
-      <button onclick="toggleFavorito('${r.id}')">❤️ Favorito</button>
-      <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>
-    `;
+    div.innerHTML = \`
+      <h3>\${r.titulo}</h3>
+      <p>⏱ \${r.tiempo}</p>
+      <button onclick="toggleFavorito(\${r.id})">\${favoritos[r.id] ? "❤️" : "🤍"}</button>
+      <button onclick="eliminarReceta(\${r.id})">🗑️</button>
+      <button onclick="agendar(\${r.id})">🗓️</button>
+    \`;
     contenedor.appendChild(div);
-  });
+  }
 }
 
 function eliminarReceta(id) {
-  recetas = recetas.filter(r => r.id != id);
+  const i = recetas.findIndex(r => r.id === id);
+  if (i !== -1) recetas.splice(i, 1);
   delete favoritos[id];
-  localStorage.setItem("recetas", JSON.stringify(recetas));
-  localStorage.setItem("favoritos", JSON.stringify(favoritos));
-  buscarRecetas();
-  mostrarPlanificador();
+  guardarLocal();
+  mostrarRecetas();
 }
 
 function toggleFavorito(id) {
   favoritos[id] = !favoritos[id];
-  localStorage.setItem("favoritos", JSON.stringify(favoritos));
-  buscarRecetas();
+  guardarLocal();
+  mostrarRecetas();
 }
 
 function agendar(id) {
-  const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-  const dia = prompt("¿Para qué día de la semana quieres agendar esta receta?\n" + dias.join(", "));
-  if (dias.includes(dia)) {
-    if (!planificador[dia]) planificador[dia] = [];
-    planificador[dia].push(id);
-    localStorage.setItem("planificador", JSON.stringify(planificador));
-    mostrarPlanificador();
-  }
-}
-
-function mostrarPlanificador() {
-  const cont = document.getElementById("planificador");
-  cont.innerHTML = "";
-  const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-  dias.forEach(dia => {
-    const recetasDia = planificador[dia] || [];
-    if (recetasDia.length > 0) {
-      const div = document.createElement("div");
-      div.innerHTML = `<h3>${dia}</h3>`;
-      recetasDia.forEach((id, i) => {
-        const receta = recetas.find(r => r.id == id);
-        if (receta) {
-          div.innerHTML += `
-            <p>
-              ${receta.titulo}
-              <button onclick="eliminarAgendado('${dia}', ${i})">❌</button>
-            </p>
-          `;
-        }
-      });
-      cont.appendChild(div);
-    }
-  });
-}
-
-function eliminarAgendado(dia, index) {
-  planificador[dia].splice(index, 1);
-  if (planificador[dia].length === 0) delete planificador[dia];
-  localStorage.setItem("planificador", JSON.stringify(planificador));
+  const dia = prompt("¿Para qué día quieres agendar esta receta? (ej: lunes)");
+  if (!dia) return;
+  planificador[dia] = planificador[dia] || [];
+  planificador[dia].push(id);
+  guardarLocal();
   mostrarPlanificador();
 }
 
-buscarRecetas();
+function mostrarPlanificador() {
+  const dias = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+  const contenedor = document.getElementById("planificador");
+  contenedor.innerHTML = "";
+  for (const d of dias) {
+    const div = document.createElement("div");
+    div.innerHTML = "<h4>" + d.charAt(0).toUpperCase() + d.slice(1) + "</h4>";
+    const lista = (planificador[d] || []).map(id => {
+      const receta = recetas.find(r => r.id === id);
+      return receta ? "<li>" + receta.titulo + "</li>" : "";
+    }).join("");
+    div.innerHTML += "<ul>" + lista + "</ul>";
+    contenedor.appendChild(div);
+  }
+}
+
+function buscarRecetas() {
+  mostrarRecetas();
+}
+
+// Exponer funciones globalmente
+window.guardarReceta = guardarReceta;
+window.eliminarReceta = eliminarReceta;
+window.toggleFavorito = toggleFavorito;
+window.agendar = agendar;
+window.buscarRecetas = buscarRecetas;
+
+mostrarRecetas();
 mostrarPlanificador();
