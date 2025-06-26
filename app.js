@@ -1,113 +1,104 @@
-(function() {
-let recetasGlobal = [];
-let recetaEditandoId = null;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs, deleteDoc,
+  doc, updateDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-document.addEventListener('DOMContentLoaded', () => {
-  cargarRecetasFirebase();
-  const modal = document.getElementById('modal');
-  const closeBtn = document.querySelector('.close-btn');
-  closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
-  window.addEventListener('click', e => {
-    if (e.target === modal) modal.classList.add('hidden');
-  });
-  const buscador = document.getElementById('buscador');
-  buscador.addEventListener('input', e => {
-    const valor = e.target.value.toLowerCase();
-    const filtradas = recetasGlobal.filter(r =>
-      r.titulo.toLowerCase().includes(valor) ||
-      r.ingredientes.join(',').toLowerCase().includes(valor)
-    );
-    renderRecetas(filtradas);
-  });
-});
+const firebaseConfig = {
+  apiKey: "AIzaSyBcJ4tbucMLF3lTuDne5cyin4oyoVhTfSs",
+  authDomain: "consalud-recetas.firebaseapp.com",
+  projectId: "consalud-recetas",
+  storageBucket: "consalud-recetas.appspot.com",
+  messagingSenderId: "477690744464",
+  appId: "1:477690744464:web:597172e85fd29549fd9215"
+};
 
-async function cargarRecetasFirebase() {
-  const snapshot = await db.collection("recetas").get();
-  const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  recetasGlobal = datos;
-  renderRecetas(recetasGlobal);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const recetasRef = collection(db, "recetas");
+
+let recetaEditando = null;
+
+async function guardarReceta() {
+  const titulo = document.getElementById("titulo").value;
+  const ingredientes = document.getElementById("ingredientes").value;
+  const tiempo = document.getElementById("tiempo").value;
+  const imagen = document.getElementById("imagen").value;
+  const preparacion = document.getElementById("preparacion").value;
+  const categoria = document.getElementById("categoria").value;
+
+  if (recetaEditando) {
+    await updateDoc(doc(db, "recetas", recetaEditando), {
+      titulo, ingredientes, tiempo, imagen, preparacion, categoria
+    });
+    recetaEditando = null;
+    document.getElementById("form-title").innerText = "➕ Agregar nueva receta";
+  } else {
+    await addDoc(recetasRef, {
+      titulo, ingredientes, tiempo, imagen, preparacion, categoria
+    });
+  }
+
+  document.getElementById("titulo").value = "";
+  document.getElementById("ingredientes").value = "";
+  document.getElementById("tiempo").value = "";
+  document.getElementById("imagen").value = "";
+  document.getElementById("preparacion").value = "";
+  document.getElementById("categoria").value = "";
 }
 
-function renderRecetas(recetas) {
-  const container = document.getElementById('recetas-container');
-  container.innerHTML = '';
-  if (recetas.length === 0) {
-    container.innerHTML = "<p style='text-align:center; color: #888;'>No se encontraron recetas.</p>";
-    return;
-  }
-  recetas.forEach(receta => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <img src="${receta.imagen}" alt="${receta.titulo}">
-      <div class="card-content">
-        <h3>${receta.titulo}</h3>
-        <p>⏱ ${receta.tiempo}</p>
-        <button onclick='verDetalle(${JSON.stringify(receta)})'>Ver más</button>
-        <button onclick='editarReceta("${receta.id}")'>✏️ Editar</button>
-        <button onclick='eliminarReceta("${receta.id}")'>🗑️ Eliminar</button>
-      </div>`;
-    container.appendChild(card);
+function mostrarRecetas(query = "", filtroCat = "") {
+  onSnapshot(recetasRef, (snapshot) => {
+    const recetasDiv = document.getElementById("recetas");
+    recetasDiv.innerHTML = "";
+
+    snapshot.docs.forEach(docu => {
+      const receta = docu.data();
+      const id = docu.id;
+
+      const coincideTexto = receta.titulo.toLowerCase().includes(query.toLowerCase()) ||
+        receta.ingredientes.toLowerCase().includes(query.toLowerCase());
+      const coincideCategoria = !filtroCat || receta.categoria === filtroCat;
+
+      if (!coincideTexto || !coincideCategoria) return;
+
+      const div = document.createElement("div");
+      div.className = "receta";
+      div.innerHTML = `
+        <h3>${receta.titulo} <small>(${receta.categoria || "Sin categoría"})</small></h3>
+        <img src="${receta.imagen}" alt="${receta.titulo}">
+        <p><strong>Tiempo:</strong> ${receta.tiempo}</p>
+        <p><strong>Ingredientes:</strong> ${receta.ingredientes}</p>
+        <p><strong>Preparación:</strong> ${receta.preparacion}</p>
+        <div class="acciones">
+          <button onclick="editarReceta('${id}', \`${receta.titulo}\`, \`${receta.ingredientes}\`, \`${receta.tiempo}\`, \`${receta.imagen}\`, \`${receta.preparacion}\`, \`${receta.categoria || ""}\`)">✏️ Editar</button>
+          <button onclick="eliminarReceta('${id}')">🗑️ Eliminar</button>
+        </div>
+      `;
+      recetasDiv.appendChild(div);
+    });
   });
 }
 
-window.verDetalle = function(receta) {
-  document.getElementById('modal-title').textContent = receta.titulo;
-  document.getElementById('modal-img').src = receta.imagen;
-  document.getElementById('modal-tiempo').textContent = receta.tiempo;
-  const lista = document.getElementById('modal-ingredientes');
-  lista.innerHTML = '';
-  receta.ingredientes.forEach(item => {
-    const li = document.createElement('li');
-    li.textContent = item;
-    lista.appendChild(li);
-  });
-  document.getElementById('modal-pasos').textContent = receta.pasos;
-  document.getElementById('modal').classList.remove('hidden');
+window.eliminarReceta = async (id) => {
+  await deleteDoc(doc(db, "recetas", id));
 };
 
-window.editarReceta = function(id) {
-  const receta = recetasGlobal.find(r => r.id === id);
-  if (!receta) return;
-  document.getElementById("titulo").value = receta.titulo;
-  document.getElementById("ingredientes").value = receta.ingredientes.join(", ");
-  document.getElementById("tiempo").value = receta.tiempo;
-  document.getElementById("imagen").value = receta.imagen;
-  document.getElementById("pasos").value = receta.pasos;
-  recetaEditandoId = id;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+window.editarReceta = (id, titulo, ingredientes, tiempo, imagen, preparacion, categoria) => {
+  recetaEditando = id;
+  document.getElementById("form-title").innerText = "✏️ Editando receta";
+  document.getElementById("titulo").value = titulo;
+  document.getElementById("ingredientes").value = ingredientes;
+  document.getElementById("tiempo").value = tiempo;
+  document.getElementById("imagen").value = imagen;
+  document.getElementById("preparacion").value = preparacion;
+  document.getElementById("categoria").value = categoria;
 };
 
-window.eliminarReceta = async function(id) {
-  const confirmacion = confirm("¿Estás seguro de eliminar esta receta?");
-  if (!confirmacion) return;
-  await db.collection("recetas").doc(id).delete();
-  alert("Receta eliminada ✅");
-  cargarRecetasFirebase();
+window.buscarRecetas = () => {
+  const q = document.getElementById("busqueda").value;
+  const cat = document.getElementById("filtroCategoria").value;
+  mostrarRecetas(q, cat);
 };
 
-document.getElementById("recetaForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  const nuevaReceta = {
-    titulo: document.getElementById("titulo").value.trim(),
-    ingredientes: document.getElementById("ingredientes").value.split(",").map(i => i.trim()),
-    tiempo: document.getElementById("tiempo").value.trim(),
-    imagen: document.getElementById("imagen").value.trim(),
-    pasos: document.getElementById("pasos").value.trim()
-  };
-  try {
-    if (recetaEditandoId) {
-      await db.collection("recetas").doc(recetaEditandoId).update(nuevaReceta);
-      alert("Receta actualizada ✅");
-      recetaEditandoId = null;
-    } else {
-      await db.collection("recetas").add(nuevaReceta);
-      alert("Receta guardada ✅");
-    }
-    this.reset();
-    cargarRecetasFirebase();
-  } catch (error) {
-    alert("Error al guardar la receta ❌");
-  }
-});
-})();
+mostrarRecetas();
