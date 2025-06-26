@@ -1,0 +1,16 @@
+[
+  {
+    "titulo": "Ensalada de Quinoa",
+    "ingredientes": ["1 taza de quinoa", "1 pepino", "1 tomate", "Jugo de limón", "Perejil"],
+    "pasos": "Cocina la quinoa, déjala enfriar. Mezcla con los vegetales picados y el jugo de limón.",
+    "imagen": "img/ensalada.jpg",
+    "tiempo": "15 minutos"
+  },
+  {
+    "titulo": "Smoothie Verde Detox",
+    "ingredientes": ["1 taza de espinaca", "1 plátano", "1/2 taza de piña", "1 taza de agua de coco"],
+    "pasos": "Coloca todos los ingredientes en una licuadora y mezcla hasta obtener una textura suave.",
+    "imagen": "img/smoothie.jpg",
+    "tiempo": "5 minutos"
+  }
+]
