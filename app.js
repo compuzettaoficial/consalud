@@ -5,6 +5,7 @@ auth.onAuthStateChanged(user => {
   const adminActions = document.getElementById('admin-actions');
   if (user) {
     info.innerHTML = `👋 Bienvenido ${user.displayName || user.email}`;
+    // Mostrar botón de agregar solo si es admin
     if (user.email === adminEmail) {
       adminActions.style.display = 'block';
     } else {
@@ -20,7 +21,8 @@ auth.onAuthStateChanged(user => {
 
 function loginConGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(error => alert("Error: " + error.message));
+  auth.signInWithPopup(provider)
+    .catch(error => alert("Error: " + error.message));
 }
 
 function logout() {
@@ -41,7 +43,7 @@ function guardarReceta() {
     preparacion: document.getElementById('preparacion').value
   };
   db.collection("recetas").add(nueva).then(() => {
-    alert("Receta guardada");
+    alert("✅ Receta guardada");
     document.getElementById('formulario').style.display = 'none';
     cargarRecetas();
   }).catch(error => alert("Error: " + error.message));
@@ -65,4 +67,3 @@ function cargarRecetas() {
     });
   });
 }
-
