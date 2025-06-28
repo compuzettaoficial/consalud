@@ -1,22 +1,37 @@
-// Parte 1: Configuración y autenticación
-let usuarioActual = null;
+// Inicializa Firestore
+const db = firebase.firestore();
+let user = null;
 let recetaAAgendar = null;
 
-firebase.auth().onAuthStateChanged(async user => {
+// Tema oscuro / claro
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('tema', document.body.classList.contains('dark') ? 'oscuro' : 'claro');
+}
+
+// Verifica el tema al iniciar
+if (localStorage.getItem('tema') === 'oscuro') {
+  document.body.classList.add('dark');
+}
+
+
+// Al cargar, aplicar el tema guardado
+if (localStorage.getItem('tema') === 'oscuro') {
+  document.body.classList.add('dark');
+}
+
+
+// Login / Logout
+firebase.auth().onAuthStateChanged(u => {
+  user = u;
   const info = document.getElementById('user-info');
   if (user) {
-    usuarioActual = user;
     info.textContent = '👋 Bienvenido ' + user.displayName;
-    if (user.email === 'compuzettaoficial@gmail.com') {
-      document.getElementById('admin-actions').style.display = 'block';
-    } else {
-      document.getElementById('admin-actions').style.display = 'none';
-    }
+    document.getElementById('admin-actions').style.display = user.email === 'compuzettaoficial@gmail.com' ? 'block' : 'none';
     cargarRecetas();
     cargarFavoritos();
     cargarPlanificador();
   } else {
-    usuarioActual = null;
     info.textContent = 'No has iniciado sesión';
     document.getElementById('admin-actions').style.display = 'none';
     document.getElementById('recetas').innerHTML = '';
@@ -27,74 +42,95 @@ firebase.auth().onAuthStateChanged(async user => {
 
 function loginConGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider)
-    .catch(error => alert('Error al iniciar sesión: ' + error.message));
+  firebase.auth().signInWithPopup(provider).catch(err => alert('Error al iniciar sesión: ' + err.message));
 }
 
 function logout() {
   firebase.auth().signOut();
 }
-// Parte 2: Funciones de recetas, favoritos y planificador
 
-async function cargarRecetas() {
-  const snap = await firebase.firestore().collection('recetas').get();
-  const cont = document.getElementById('recetas');
-  cont.innerHTML = '';
-  snap.forEach(doc => {
-    const r = doc.data();
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <h3>${r.titulo}</h3>
-      <p>⏱ ${r.tiempo}</p>
-      <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
-      <p><strong>Preparación:</strong> ${r.preparacion}</p>
-      <p><strong>Categoría:</strong> ${r.categoria}</p>
-      <img src="${r.imagen || 'https://via.placeholder.com/150'}" style="width:100px;">
-      <button onclick="marcarFavorito('${doc.id}')">❤️ Favorito</button>
-      <button onclick="abrirModalAgendar('${doc.id}')">📆 Agendar</button>
-      ${usuarioActual.email === 'compuzettaoficial@gmail.com' ? `
-        <button onclick="eliminarReceta('${doc.id}')">🗑️ Eliminar</button>
-      ` : ''}
-    `;
-    cont.appendChild(card);
+// Tema oscuro / claro
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('tema', document.body.classList.contains('dark') ? 'oscuro' : 'claro');
+}
+
+// Mostrar formulario
+function mostrarFormulario() {
+  document.getElementById('formulario').style.display = 'block';
+}
+
+// Guardar receta
+function guardarReceta() {
+  const nueva = {
+    titulo: document.getElementById('titulo').value,
+    ingredientes: document.getElementById('ingredientes').value,
+    tiempo: document.getElementById('tiempo').value,
+    imagen: document.getElementById('imagen').value,
+    categoria: document.getElementById('categoria').value,
+    preparacion: document.getElementById('preparacion').value,
+  };
+  db.collection('recetas').add(nueva).then(() => {
+    alert('Receta guardada');
+    document.getElementById('formulario').style.display = 'none';
+    cargarRecetas();
   });
 }
 
-async function marcarFavorito(recetaId) {
-  if (!usuarioActual) return;
-  const ref = firebase.firestore()
-    .collection('usuarios').doc(usuarioActual.uid)
-    .collection('favoritos').doc(recetaId);
-  const doc = await ref.get();
-  if (doc.exists) {
-    await ref.delete();
-  } else {
-    await ref.set({ timestamp: Date.now() });
-  }
-  cargarFavoritos();
+// Cargar recetas públicas
+function cargarRecetas() {
+  db.collection('recetas').get().then(snapshot => {
+    const div = document.getElementById('recetas');
+    div.innerHTML = '';
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const id = doc.id;
+      div.innerHTML += `
+        <div class="card">
+          <img src="${r.imagen}" alt="">
+          <h3>${r.titulo}</h3>
+          <p>⏱ ${r.tiempo}</p>
+          <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
+          <p><strong>Preparación:</strong> ${r.preparacion}</p>
+          <p><strong>Categoría:</strong> ${r.categoria}</p>
+          <button onclick="marcarFavorito('${id}')">❤️ Favorito</button>
+          <button onclick="abrirModalDia('${id}')">📆 Agendar</button>
+          <button onclick="compartirReceta('${id}')">🔗 Compartir</button>
+          ${user.email === 'compuzettaoficial@gmail.com' ? `
+            <button onclick="eliminarReceta('${id}')">🗑️ Eliminar</button>` : ''}
+        </div>`;
+    });
+  });
+}
+// Favoritos
+function marcarFavorito(id) {
+  if (!user) return alert('Inicia sesión');
+  db.collection('usuarios').doc(user.uid).collection('favoritos').doc(id).set({ favorito: true }).then(() => {
+    cargarFavoritos();
+    cargarRecetas(); // recarga para que se vea al toque
+  });
 }
 
-async function cargarFavoritos() {
-  if (!usuarioActual) return;
-  const snap = await firebase.firestore()
-    .collection('usuarios').doc(usuarioActual.uid)
-    .collection('favoritos').get();
-  const cont = document.getElementById('favoritos');
-  cont.innerHTML = '';
-  for (let fav of snap.docs) {
-    const recetaDoc = await firebase.firestore().collection('recetas').doc(fav.id).get();
-    if (recetaDoc.exists) {
-      const r = recetaDoc.data();
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `<h4>${r.titulo}</h4><p>${r.tiempo}</p>`;
-      cont.appendChild(card);
-    }
-  }
+function cargarFavoritos() {
+  if (!user) return;
+  const div = document.getElementById('favoritos');
+  div.innerHTML = '';
+  db.collection('usuarios').doc(user.uid).collection('favoritos').get().then(favs => {
+    favs.forEach(favDoc => {
+      db.collection('recetas').doc(favDoc.id).get().then(recetaDoc => {
+        const r = recetaDoc.data();
+        div.innerHTML += `
+          <div class="card">
+            <h3>${r.titulo}</h3>
+            <p>${r.ingredientes}</p>
+          </div>`;
+      });
+    });
+  });
 }
 
-function abrirModalAgendar(id) {
+// Modal días
+function abrirModalDia(id) {
   recetaAAgendar = id;
   document.getElementById('modal-dia').style.display = 'block';
 }
@@ -103,57 +139,45 @@ function cerrarModalDia() {
   document.getElementById('modal-dia').style.display = 'none';
 }
 
-async function confirmarAgendar() {
-  if (!usuarioActual || !recetaAAgendar) return;
-  const dias = Array.from(document.querySelectorAll('#modal-dia input[type=checkbox]:checked'))
-               .map(cb => cb.value);
-  const batch = firebase.firestore().batch();
+// Agendar
+function confirmarAgendar() {
+  const dias = Array.from(document.querySelectorAll('#modal-dia input[type="checkbox"]:checked')).map(cb => cb.value);
+  if (!user) return alert('Inicia sesión');
   dias.forEach(dia => {
-    const ref = firebase.firestore()
-      .collection('usuarios').doc(usuarioActual.uid)
-      .collection('planificador').doc();
-    batch.set(ref, { recetaId: recetaAAgendar, dia });
+    db.collection('usuarios').doc(user.uid).collection('planificador').add({ recetaId: recetaAAgendar, dia });
   });
-  await batch.commit();
   cerrarModalDia();
   cargarPlanificador();
 }
 
-async function cargarPlanificador() {
-  if (!usuarioActual) return;
-  const snap = await firebase.firestore()
-    .collection('usuarios').doc(usuarioActual.uid)
-    .collection('planificador').get();
-  const cont = document.getElementById('planificador');
-  cont.innerHTML = '';
-  for (let p of snap.docs) {
-    const recetaDoc = await firebase.firestore().collection('recetas').doc(p.data().recetaId).get();
-    if (recetaDoc.exists) {
-      const r = recetaDoc.data();
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `<h4>${r.titulo}</h4><p>Día: ${p.data().dia}</p>`;
-      cont.appendChild(card);
-    }
-  }
-}
-
-async function guardarReceta() {
-  if (!usuarioActual || usuarioActual.email !== 'compuzettaoficial@gmail.com') return;
-  const titulo = document.getElementById('titulo').value;
-  const ingredientes = document.getElementById('ingredientes').value;
-  const tiempo = document.getElementById('tiempo').value;
-  const imagen = document.getElementById('imagen').value;
-  const categoria = document.getElementById('categoria').value;
-  const preparacion = document.getElementById('preparacion').value;
-  await firebase.firestore().collection('recetas').add({
-    titulo, ingredientes, tiempo, imagen, categoria, preparacion
+// Planificador
+function cargarPlanificador() {
+  if (!user) return;
+  const div = document.getElementById('planificador');
+  div.innerHTML = '';
+  db.collection('usuarios').doc(user.uid).collection('planificador').get().then(snap => {
+    snap.forEach(p => {
+      const { recetaId, dia } = p.data();
+      db.collection('recetas').doc(recetaId).get().then(recetaDoc => {
+        const r = recetaDoc.data();
+        div.innerHTML += `<div class="card">
+          <h4>${dia}: ${r.titulo}</h4>
+        </div>`;
+      });
+    });
   });
-  cargarRecetas();
 }
 
-async function eliminarReceta(id) {
-  if (!usuarioActual || usuarioActual.email !== 'compuzettaoficial@gmail.com') return;
-  await firebase.firestore().collection('recetas').doc(id).delete();
-  cargarRecetas();
+// Compartir
+function compartirReceta(id) {
+  const url = window.location.href + '?receta=' + id;
+  navigator.clipboard.writeText(url).then(() => alert('Enlace copiado: ' + url));
+}
+
+// Eliminar receta (admin)
+function eliminarReceta(id) {
+  if (!confirm('¿Seguro de eliminar?')) return;
+  db.collection('recetas').doc(id).delete().then(() => {
+    cargarRecetas();
+  });
 }
