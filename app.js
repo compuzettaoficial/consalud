@@ -1,20 +1,28 @@
-firebase.auth().onAuthStateChanged(user => {
-  const info = document.getElementById('user-info');
-  const recetasDiv = document.getElementById('recetas');
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const userInfo = document.getElementById('user-info');
+const recetasDiv = document.getElementById('recetas');
 
+loginBtn.addEventListener('click', loginConGoogle);
+logoutBtn.addEventListener('click', logout);
+
+firebase.auth().onAuthStateChanged(user => {
   if (user) {
-    info.textContent = 'Bienvenido ' + user.displayName;
-    cargarRecetas(); // Cargar recetas cuando el usuario está logueado
+    userInfo.textContent = '👋 Bienvenido ' + user.displayName;
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline';
+    cargarRecetas();
   } else {
-    info.textContent = 'No has iniciado sesión';
-    recetasDiv.innerHTML = ''; // Limpiar recetas si no está logueado
+    userInfo.textContent = 'No has iniciado sesión';
+    loginBtn.style.display = 'inline';
+    logoutBtn.style.display = 'none';
+    recetasDiv.innerHTML = '';
   }
 });
 
 function loginConGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).catch(error => {
-    console.error('Error al iniciar sesión:', error);
     alert('Error al iniciar sesión: ' + error.message);
   });
 }
@@ -24,12 +32,10 @@ function logout() {
 }
 
 function cargarRecetas() {
-  const recetasDiv = document.getElementById('recetas');
-  recetasDiv.innerHTML = '<p>Cargando recetas...</p>';
-
+  recetasDiv.innerHTML = '<p>⏳ Cargando recetas...</p>';
   firebase.firestore().collection('recetas').get()
     .then(snapshot => {
-      recetasDiv.innerHTML = ''; // limpiar
+      recetasDiv.innerHTML = '';
       if (snapshot.empty) {
         recetasDiv.innerHTML = '<p>No hay recetas todavía.</p>';
       } else {
@@ -51,6 +57,6 @@ function cargarRecetas() {
     })
     .catch(error => {
       console.error('Error al cargar recetas:', error);
-      recetasDiv.innerHTML = '<p>Error al cargar recetas.</p>';
+      recetasDiv.innerHTML = '<p>❌ Error al cargar recetas.</p>';
     });
 }
