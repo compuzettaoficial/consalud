@@ -3,7 +3,11 @@
   "short_name": "Recetas",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#F5F5F5",
-  "description": "App de recetas saludables con favoritos y planificador",
-  "icons": []
+  "background_color": "#f5f5f5",
+  "description": "App para ver y guardar recetas saludables",
+  "icons": [{
+    "src": "icon.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  }]
 }

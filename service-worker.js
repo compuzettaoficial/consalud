@@ -1,7 +1,7 @@
-// Service worker básico
 self.addEventListener('install', e => {
   console.log('Service Worker instalado');
 });
+
 self.addEventListener('fetch', e => {
-  e.respondWith(fetch(e.request));
+  e.respondWith(fetch(e.request).catch(() => new Response('Offline')));
 });
