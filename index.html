@@ -1,83 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🍏 Recetas Saludables</title>
-  <link rel="stylesheet" href="style.css"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍏 Recetas Saludables</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🍏 Recetas Saludables</h1>
-      <button id="toggle-theme">🌙 Tema Oscuro</button>
-    </div>
-
-    <p>Descubre platos fáciles, ricos y buenos para tu cuerpo.</p>
-
-    <button class="agregar-btn" onclick="mostrarFormulario()">➕ Agregar nueva receta</button>
-
-    <div id="formulario" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="cerrarFormulario()">&times;</span>
-        <h2 id="form-title">Agregar Receta</h2>
-        <input type="text" id="titulo" placeholder="Título" />
-        <input type="text" id="ingredientes" placeholder="Ingredientes (ej: 2 huevos, 1 taza de harina)" />
-        <input type="text" id="tiempo" placeholder="Tiempo de preparación" />
-        <input type="text" id="imagen" placeholder="URL de imagen" />
-        <textarea id="preparacion" placeholder="Pasos de preparación"></textarea>
-        <label>Categoría:</label>
-        <select id="categoria">
-          <option value="">Sin categoría</option>
-          <option value="Desayuno">Desayuno</option>
-          <option value="Almuerzo">Almuerzo</option>
-          <option value="Cena">Cena</option>
-          <option value="Snack">Snack</option>
-        </select>
-        <button onclick="guardarReceta()">Guardar Receta</button>
-      </div>
-    </div>
-
-    <!-- Modal multi‑check para agendar -->
-    <div id="modal-dia" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="cerrarModalDia()">&times;</span>
-        <h3>Selecciona días para agendar:</h3>
-        <div class="dias-semana">
-          <label><input type="checkbox" value="Lunes"> Lunes</label>
-          <label><input type="checkbox" value="Martes"> Martes</label>
-          <label><input type="checkbox" value="Miércoles"> Miércoles</label>
-          <label><input type="checkbox" value="Jueves"> Jueves</label>
-          <label><input type="checkbox" value="Viernes"> Viernes</label>
-          <label><input type="checkbox" value="Sábado"> Sábado</label>
-          <label><input type="checkbox" value="Domingo"> Domingo</label>
-        </div>
-        <button onclick="agendarEnDias()">✅ Agendar</button>
-      </div>
-    </div>
-
-    <div class="filtros">
-      <input type="text" id="busqueda" placeholder="🔍 Buscar receta o ingrediente..." oninput="mostrarRecetas()" />
-      <select id="filtroCategoria" onchange="mostrarRecetas()">
-        <option value="">Todas</option>
-        <option value="Desayuno">Desayuno</option>
-        <option value="Almuerzo">Almuerzo</option>
-        <option value="Cena">Cena</option>
-        <option value="Snack">Snack</option>
-      </select>
-      <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> ❤️ Solo favoritos</label>
-    </div>
-
-    <h2>📋 Mis Recetas</h2>
-    <div id="recetas"></div>
-
-    <h2>📆 Planificador Semanal</h2>
-    <div id="planificador"></div>
-
-    <h2>🛒 Lista de Compras</h2>
-    <div id="lista-compras"></div>
-  </div>
-
-  <script src="app.js"></script>
+  <h1>🍏 Recetas Saludables</h1>
+  <button onclick="loginConGoogle()">Login con Google</button>
+  <button onclick="logout()">Logout</button>
+  <div id="user-info"></div>
+  <div id="recetas"></div>
+<script src="app.js"></script>
 </body>
 </html>
