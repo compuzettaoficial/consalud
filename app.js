@@ -1,32 +1,23 @@
-const adminEmail = "compuzettaoficial@gmail.com";
-
-auth.onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(user => {
   const info = document.getElementById('user-info');
-  const adminActions = document.getElementById('admin-actions');
+  const admin = (user && user.email === 'compuzettaoficial@gmail.com');
   if (user) {
-    info.innerHTML = `👋 Bienvenido ${user.displayName || user.email}`;
-    // Mostrar botón de agregar solo si es admin
-    if (user.email === adminEmail) {
-      adminActions.style.display = 'block';
-    } else {
-      adminActions.style.display = 'none';
-    }
+    info.innerHTML = `👋 Bienvenido ${user.displayName}`;
+    if (admin) document.getElementById('admin-actions').style.display = 'block';
     cargarRecetas();
   } else {
-    info.textContent = 'No has iniciado sesión';
-    adminActions.style.display = 'none';
-    document.getElementById('recetas').innerHTML = '';
+    info.innerHTML = 'No has iniciado sesión';
+    document.getElementById('admin-actions').style.display = 'none';
   }
 });
 
 function loginConGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
-    .catch(error => alert("Error: " + error.message));
+  firebase.auth().signInWithPopup(provider).catch(e => alert('Error: ' + e.message));
 }
 
 function logout() {
-  auth.signOut();
+  firebase.auth().signOut();
 }
 
 function mostrarFormulario() {
@@ -34,7 +25,7 @@ function mostrarFormulario() {
 }
 
 function guardarReceta() {
-  const nueva = {
+  const receta = {
     titulo: document.getElementById('titulo').value,
     ingredientes: document.getElementById('ingredientes').value,
     tiempo: document.getElementById('tiempo').value,
@@ -42,28 +33,27 @@ function guardarReceta() {
     categoria: document.getElementById('categoria').value,
     preparacion: document.getElementById('preparacion').value
   };
-  db.collection("recetas").add(nueva).then(() => {
-    alert("✅ Receta guardada");
+  db.collection('recetas').add(receta).then(() => {
+    alert('Receta guardada');
     document.getElementById('formulario').style.display = 'none';
     cargarRecetas();
-  }).catch(error => alert("Error: " + error.message));
+  }).catch(e => alert('Error al guardar: ' + e.message));
 }
 
 function cargarRecetas() {
-  db.collection("recetas").get().then(snapshot => {
-    const contenedor = document.getElementById('recetas');
-    contenedor.innerHTML = '';
+  db.collection('recetas').get().then(snapshot => {
+    const cont = document.getElementById('recetas');
+    cont.innerHTML = '';
     snapshot.forEach(doc => {
       const r = doc.data();
-      contenedor.innerHTML += `
-        <div class="card">
-          <img src="${r.imagen || 'https://via.placeholder.com/150'}" alt="Imagen">
-          <h3>${r.titulo}</h3>
-          <p>⏱ ${r.tiempo}</p>
-          <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
-          <p><strong>Preparación:</strong> ${r.preparacion}</p>
-          <p><strong>Categoría:</strong> ${r.categoria}</p>
-        </div>`;
+      cont.innerHTML += `<div class='card'>
+        <h3>${r.titulo}</h3>
+        <p>⏱ ${r.tiempo}</p>
+        <p>Ingredientes: ${r.ingredientes}</p>
+        <p>Preparación: ${r.preparacion}</p>
+        <p>Categoría: ${r.categoria}</p>
+        <img src=\"${r.imagen}\" style=\"max-width:100px;\">
+      </div>`;
     });
   });
 }
