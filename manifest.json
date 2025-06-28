@@ -1,15 +1,9 @@
 {
-    "name": "Recetas Saludables",
-    "short_name": "Recetas",
-    "start_url": "index.html",
-    "display": "standalone",
-    "background_color": "#F5F5F5",
-    "theme_color": "#4CAF50",
-    "icons": [
-        {
-            "src": "icon.svg",
-            "sizes": "192x192",
-            "type": "image/svg+xml"
-        }
-    ]
+  "name": "Recetas Saludables",
+  "short_name": "Recetas",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F5F5F5",
+  "description": "App de recetas saludables con favoritos y planificador",
+  "icons": []
 }

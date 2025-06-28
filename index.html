@@ -1,28 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <title>Recetas Saludables</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍏 Recetas Saludables</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Recetas Saludables</h1>
-        <button id="loginBtn">Iniciar sesión con Google</button>
-        <button id="logoutBtn" style="display:none;">Cerrar sesión</button>
-        <button id="toggleTheme">Modo Oscuro</button>
-    </header>
-    <main>
-        <section id="recetas"></section>
-        <section id="favoritos"></section>
-        <section id="planificador"></section>
-    </main>
-    <footer>
-        <p>&copy; 2025 Recetas Saludables</p>
-    </footer>
-    <script src="firebase-config.js"></script>
-    <script src="app.js"></script>
+  <h1>🍏 Recetas Saludables</h1>
+  <button onclick="loginConGoogle()">Login con Google</button>
+  <button onclick="logout()">Logout</button>
+  <div id="user-info"></div>
+  <div id="recetas"></div>
+<script src="app.js"></script>
 </body>
 </html>
