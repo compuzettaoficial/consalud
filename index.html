@@ -8,41 +8,57 @@
 </head>
 <body>
   <div class="container">
-    <h1>🍏 Recetas Saludables</h1>
+    <div class="header">
+      <h1>🍏 Recetas Saludables</h1>
+      <button id="toggle-theme">🌙 Tema Oscuro</button>
+    </div>
+
     <p>Descubre platos fáciles, ricos y buenos para tu cuerpo.</p>
 
-    <button class="agregar-btn" onclick="document.getElementById('formulario').style.display='block'">➕ Agregar nueva receta</button>
+    <button class="agregar-btn" onclick="mostrarFormulario()">➕ Agregar nueva receta</button>
 
     <div id="formulario" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="document.getElementById('formulario').style.display='none'">&times;</span>
-        <h2>Agregar Receta</h2>
+        <span class="close" onclick="cerrarFormulario()">&times;</span>
+        <h2 id="form-title">Agregar Receta</h2>
         <input type="text" id="titulo" placeholder="Título" />
-        <input type="text" id="ingredientes" placeholder="Ingredientes (separados por coma)" />
+        <input type="text" id="ingredientes" placeholder="Ingredientes (ej: 2 huevos, 1 taza de harina)" />
         <input type="text" id="tiempo" placeholder="Tiempo de preparación" />
         <input type="text" id="imagen" placeholder="URL de imagen" />
         <textarea id="preparacion" placeholder="Pasos de preparación"></textarea>
-        <select id="categoria">
-          <option value="">Sin categoría</option>
-          <option value="Desayuno">Desayuno</option>
-          <option value="Almuerzo">Almuerzo</option>
-          <option value="Cena">Cena</option>
-          <option value="Snack">Snack</option>
-        </select>
+        <input type="text" id="categoria" placeholder="Categoría (opcional)" />
         <button onclick="guardarReceta()">Guardar Receta</button>
       </div>
     </div>
 
+    <!-- Modal multi‑check para agendar -->
+    <div id="modal-dia" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="cerrarModalDia()">&times;</span>
+        <h3>Selecciona días para agendar:</h3>
+        <div class="dias-semana">
+          <label><input type="checkbox" value="Lunes"> Lunes</label>
+          <label><input type="checkbox" value="Martes"> Martes</label>
+          <label><input type="checkbox" value="Miércoles"> Miércoles</label>
+          <label><input type="checkbox" value="Jueves"> Jueves</label>
+          <label><input type="checkbox" value="Viernes"> Viernes</label>
+          <label><input type="checkbox" value="Sábado"> Sábado</label>
+          <label><input type="checkbox" value="Domingo"> Domingo</label>
+        </div>
+        <button onclick="agendarEnDias()">✅ Agendar</button>
+      </div>
+    </div>
+
     <div class="filtros">
-      <input type="text" id="busqueda" placeholder="🔍 Buscar receta o ingrediente..." oninput="buscarRecetas()" />
-      <select id="filtroCategoria" onchange="buscarRecetas()">
-        <option value="">Todas las categorías</option>
+      <input type="text" id="busqueda" placeholder="🔍 Buscar receta o ingrediente..." oninput="mostrarRecetas()" />
+      <select id="filtroCategoria" onchange="mostrarRecetas()">
+        <option value="">Todas</option>
         <option value="Desayuno">Desayuno</option>
         <option value="Almuerzo">Almuerzo</option>
         <option value="Cena">Cena</option>
         <option value="Snack">Snack</option>
       </select>
-      <label><input type="checkbox" id="verFavoritos" onchange="buscarRecetas()"> Ver solo favoritos ❤️</label>
+      <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> ❤️ Solo favoritos</label>
     </div>
 
     <h2>📋 Mis Recetas</h2>
@@ -50,7 +66,11 @@
 
     <h2>📆 Planificador Semanal</h2>
     <div id="planificador"></div>
+
+    <h2>🛒 Lista de Compras</h2>
+    <div id="lista-compras"></div>
   </div>
-  <script src="app.js?v=2"></script>
+
+  <script src="app.js"></script>
 </body>
 </html>
