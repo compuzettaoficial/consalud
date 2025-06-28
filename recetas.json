@@ -1,16 +1,57 @@
 [
   {
+    "id": 1,
     "titulo": "Ensalada de Quinoa",
-    "ingredientes": ["1 taza de quinoa", "1 pepino", "1 tomate", "Jugo de limón", "Perejil"],
-    "pasos": "Cocina la quinoa, déjala enfriar. Mezcla con los vegetales picados y el jugo de limón.",
-    "imagen": "img/ensalada.jpg",
-    "tiempo": "15 minutos"
+    "ingredientes": "1 taza quinoa, 2 tomates, 1 pepino, 1 limón, sal",
+    "tiempo": "15 min",
+    "imagen": "https://via.placeholder.com/300x200?text=Ensalada+Quinoa",
+    "preparacion": "Cocer la quinoa, cortar las verduras, mezclar y aliñar con limón y sal.",
+    "categoria": "Almuerzo",
+    "slug": "ensalada-de-quinoa-1",
+    "favorito": false
   },
   {
-    "titulo": "Smoothie Verde Detox",
-    "ingredientes": ["1 taza de espinaca", "1 plátano", "1/2 taza de piña", "1 taza de agua de coco"],
-    "pasos": "Coloca todos los ingredientes en una licuadora y mezcla hasta obtener una textura suave.",
-    "imagen": "img/smoothie.jpg",
-    "tiempo": "5 minutos"
+    "id": 2,
+    "titulo": "Smoothie de Fresa",
+    "ingredientes": "1 taza fresas, 1 plátano, 1 vaso leche vegetal",
+    "tiempo": "5 min",
+    "imagen": "https://via.placeholder.com/300x200?text=Smoothie+Fresa",
+    "preparacion": "Batir todos los ingredientes hasta obtener una mezcla suave.",
+    "categoria": "Desayuno",
+    "slug": "smoothie-de-fresa-2",
+    "favorito": false
+  },
+  {
+    "id": 3,
+    "titulo": "Tostadas Integrales",
+    "ingredientes": "2 rebanadas pan integral, aguacate, tomate, aceite de oliva",
+    "tiempo": "10 min",
+    "imagen": "https://via.placeholder.com/300x200?text=Tostadas+Integrales",
+    "preparacion": "Tostar el pan, untar aguacate, añadir rodajas de tomate y un chorrito de aceite.",
+    "categoria": "Desayuno",
+    "slug": "tostadas-integrales-3",
+    "favorito": false
+  },
+  {
+    "id": 4,
+    "titulo": "Sopa de Verduras",
+    "ingredientes": "2 zanahorias, 1 calabacín, 1 papa, caldo de verduras",
+    "tiempo": "25 min",
+    "imagen": "https://via.placeholder.com/300x200?text=Sopa+Verduras",
+    "preparacion": "Cortar las verduras, hervir en el caldo hasta que estén tiernas.",
+    "categoria": "Cena",
+    "slug": "sopa-de-verduras-4",
+    "favorito": false
+  },
+  {
+    "id": 5,
+    "titulo": "Barras de Avena",
+    "ingredientes": "2 tazas avena, miel, frutos secos",
+    "tiempo": "20 min",
+    "imagen": "https://via.placeholder.com/300x200?text=Barras+Avena",
+    "preparacion": "Mezclar todo, hornear 15 min, dejar enfriar y cortar en barras.",
+    "categoria": "Snack",
+    "slug": "barras-de-avena-5",
+    "favorito": false
   }
 ]
