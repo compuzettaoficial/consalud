@@ -1,9 +1,9 @@
 let recetas = JSON.parse(localStorage.getItem('recetas')) || [];
 let planificador = JSON.parse(localStorage.getItem('planificador')) || {};
-let recetaEnEdicion = null;
 let recetaAAgendar = null;
+let recetaEnEdicion = null;
 
-// Tema claro/oscuro
+// Tema claro / oscuro
 document.getElementById('toggle-theme').addEventListener('click', () => {
   document.body.classList.toggle('dark');
   const isDark = document.body.classList.contains('dark');
@@ -32,6 +32,19 @@ function cerrarFormulario() {
   recetaEnEdicion = null;
 }
 
+// Mostrar modal para elegir días
+function mostrarModalDia(id) {
+  recetaAAgendar = id;
+  document.getElementById('modal-dia').style.display = 'block';
+}
+
+// Cerrar modal
+function cerrarModalDia() {
+  document.getElementById('modal-dia').style.display = 'none';
+  recetaAAgendar = null;
+  document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
+}
+
 // Guardar receta (nueva o editada)
 function guardarReceta() {
   const titulo = document.getElementById('titulo').value.trim();
@@ -39,7 +52,7 @@ function guardarReceta() {
   const tiempo = document.getElementById('tiempo').value.trim();
   const imagen = document.getElementById('imagen').value.trim();
   const preparacion = document.getElementById('preparacion').value.trim();
-  const categoria = document.getElementById('categoria').value.trim();
+  const categoria = document.getElementById('categoria').value;
 
   if (!titulo || !ingredientes || !tiempo || !preparacion) {
     alert('Por favor completa todos los campos obligatorios.');
@@ -57,10 +70,16 @@ function guardarReceta() {
       receta.categoria = categoria;
     }
   } else {
+    const slug = `${titulo.toLowerCase().replace(/ /g, "-")}-${Date.now()}`;
     const nuevaReceta = {
       id: Date.now(),
-      titulo, ingredientes, tiempo, imagen, preparacion, categoria,
-      slug: `${titulo.toLowerCase().replace(/ /g, "-")}-${Date.now()}`,
+      titulo,
+      ingredientes,
+      tiempo,
+      imagen,
+      preparacion,
+      categoria,
+      slug,
       favorito: false
     };
     recetas.push(nuevaReceta);
@@ -81,51 +100,6 @@ function limpiarFormulario() {
   document.getElementById('categoria').value = '';
 }
 
-// Editar receta
-function editarReceta(id) {
-  const receta = recetas.find(r => r.id === id);
-  if (!receta) return;
-  recetaEnEdicion = id;
-  document.getElementById('titulo').value = receta.titulo;
-  document.getElementById('ingredientes').value = receta.ingredientes;
-  document.getElementById('tiempo').value = receta.tiempo;
-  document.getElementById('imagen').value = receta.imagen;
-  document.getElementById('preparacion').value = receta.preparacion;
-  document.getElementById('categoria').value = receta.categoria;
-  mostrarFormulario();
-}
-
-// Eliminar receta + quitarla del planificador
-function eliminarReceta(id) {
-  recetas = recetas.filter(r => r.id !== id);
-  for (let dia in planificador) {
-    planificador[dia] = planificador[dia].filter(r => r.id !== id);
-  }
-  localStorage.setItem('recetas', JSON.stringify(recetas));
-  localStorage.setItem('planificador', JSON.stringify(planificador));
-  mostrarRecetas();
-  mostrarPlanificador();
-  generarListaCompras();
-}
-
-// Favorito
-function toggleFavorito(id) {
-  const receta = recetas.find(r => r.id === id);
-  if (receta) {
-    receta.favorito = !receta.favorito;
-    localStorage.setItem('recetas', JSON.stringify(recetas));
-    mostrarRecetas();
-  }
-}
-
-// Compartir
-function copiarURL(slug) {
-  const url = `${window.location.origin}${window.location.pathname}?receta=${slug}`;
-  navigator.clipboard.writeText(url).then(() => {
-    alert("Enlace copiado al portapapeles:\n" + url);
-  });
-}
-
 // Mostrar recetas
 function mostrarRecetas() {
   const contenedor = document.getElementById('recetas');
@@ -135,18 +109,18 @@ function mostrarRecetas() {
   const filtroCategoria = document.getElementById('filtroCategoria').value;
   const verFavoritos = document.getElementById('verFavoritos').checked;
 
-  const filtradas = recetas.filter(r =>
+  const recetasFiltradas = recetas.filter(r =>
     (!textoBusqueda || r.titulo.toLowerCase().includes(textoBusqueda) || r.ingredientes.toLowerCase().includes(textoBusqueda)) &&
     (!filtroCategoria || r.categoria === filtroCategoria) &&
     (!verFavoritos || r.favorito)
   );
 
-  if (filtradas.length === 0) {
+  if (recetasFiltradas.length === 0) {
     contenedor.innerHTML = '<p>No se encontraron recetas.</p>';
     return;
   }
 
-  filtradas.forEach(r => {
+  recetasFiltradas.forEach(r => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -166,17 +140,49 @@ function mostrarRecetas() {
   });
 }
 
-// Mostrar modal multi‑check para agendar
-function mostrarModalDia(id) {
-  recetaAAgendar = id;
-  document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
-  document.getElementById('modal-dia').style.display = 'block';
+// Editar receta
+function editarReceta(id) {
+  const receta = recetas.find(r => r.id === id);
+  if (!receta) return;
+  document.getElementById('titulo').value = receta.titulo;
+  document.getElementById('ingredientes').value = receta.ingredientes;
+  document.getElementById('tiempo').value = receta.tiempo;
+  document.getElementById('imagen').value = receta.imagen;
+  document.getElementById('preparacion').value = receta.preparacion;
+  document.getElementById('categoria').value = receta.categoria;
+  recetaEnEdicion = id;
+  mostrarFormulario();
 }
 
-// Cerrar modal
-function cerrarModalDia() {
-  document.getElementById('modal-dia').style.display = 'none';
-  recetaAAgendar = null;
+// Eliminar receta
+function eliminarReceta(id) {
+  recetas = recetas.filter(r => r.id !== id);
+  Object.keys(planificador).forEach(dia => {
+    planificador[dia] = planificador[dia].filter(r => r.id !== id);
+  });
+  localStorage.setItem('recetas', JSON.stringify(recetas));
+  localStorage.setItem('planificador', JSON.stringify(planificador));
+  mostrarRecetas();
+  mostrarPlanificador();
+  generarListaCompras();
+}
+
+// Favorito on/off
+function toggleFavorito(id) {
+  const receta = recetas.find(r => r.id === id);
+  if (receta) {
+    receta.favorito = !receta.favorito;
+    localStorage.setItem('recetas', JSON.stringify(recetas));
+    mostrarRecetas();
+  }
+}
+
+// Copiar enlace
+function copiarURL(slug) {
+  const url = `${window.location.origin}${window.location.pathname}?receta=${slug}`;
+  navigator.clipboard.writeText(url).then(() => {
+    alert("Enlace copiado:\n" + url);
+  });
 }
 
 // Agendar en varios días
@@ -188,15 +194,27 @@ function agendarEnDias() {
   }
   const receta = recetas.find(r => r.id === recetaAAgendar);
   if (!receta) return;
+
   checkboxes.forEach(cb => {
     const dia = cb.value;
     if (!planificador[dia]) planificador[dia] = [];
     planificador[dia].push(receta);
   });
   localStorage.setItem('planificador', JSON.stringify(planificador));
+  recetaAAgendar = null;
   cerrarModalDia();
   mostrarPlanificador();
   generarListaCompras();
+}
+
+// Quitar receta de un día
+function quitarRecetaDeDia(dia, index) {
+  if (planificador[dia]) {
+    planificador[dia].splice(index, 1);
+    localStorage.setItem('planificador', JSON.stringify(planificador));
+    mostrarPlanificador();
+    generarListaCompras();
+  }
 }
 
 // Mostrar planificador
@@ -211,18 +229,15 @@ function mostrarPlanificador() {
       diaDiv.className = 'card';
       diaDiv.innerHTML = `<h4>${dia}</h4>`;
       recetasDia.forEach((r, index) => {
-        const item = document.createElement('div');
-        item.style.display = 'flex';
-        item.style.alignItems = 'center';
-        item.innerHTML = `
-          <img src="${r.imagen || 'https://via.placeholder.com/50'}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;margin-right:8px;">
-          <div style="flex:1;">
-            <strong>${r.titulo}</strong><br>
-            <small>⏱ ${r.tiempo}</small>
-          </div>
-          <button onclick="quitarRecetaDeDia('${dia}',${index})">❌</button>
-        `;
-        diaDiv.appendChild(item);
+        diaDiv.innerHTML += `
+          <div style="display:flex;align-items:center;margin-bottom:5px;">
+            <img src="${r.imagen || 'https://via.placeholder.com/50'}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;margin-right:8px;">
+            <div style="flex:1;">
+              <strong>${r.titulo}</strong><br>
+              <small>⏱ ${r.tiempo}</small>
+            </div>
+            <button onclick="quitarRecetaDeDia('${dia}',${index})">❌</button>
+          </div>`;
       });
       contenedor.appendChild(diaDiv);
     }
@@ -232,24 +247,18 @@ function mostrarPlanificador() {
   }
 }
 
-// Quitar receta de un día
-function quitarRecetaDeDia(dia, index) {
-  planificador[dia].splice(index, 1);
-  localStorage.setItem('planificador', JSON.stringify(planificador));
-  mostrarPlanificador();
-  generarListaCompras();
-}
-
 // Generar lista de compras
 function generarListaCompras() {
-  const cont = document.getElementById('lista-compras');
-  cont.innerHTML = '';
+  const listaContenedor = document.getElementById('lista-compras');
+  listaContenedor.innerHTML = '';
   let todosIngredientes = [];
-  Object.values(planificador).flat().forEach(r =>
-    todosIngredientes.push(...r.ingredientes.split(',').map(i => i.trim()))
-  );
+  Object.values(planificador).forEach(arr => {
+    arr.forEach(receta =>
+      todosIngredientes.push(...receta.ingredientes.split(',').map(i => i.trim()))
+    );
+  });
   if (todosIngredientes.length === 0) {
-    cont.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
+    listaContenedor.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
     return;
   }
   const resumen = {};
@@ -261,7 +270,7 @@ function generarListaCompras() {
       resumen[nombre] = (resumen[nombre] || 0) + cantidad;
     } else {
       const nombre = item.toLowerCase();
-      resumen[nombre] = resumen[nombre] || '-';
+      if (!(nombre in resumen)) resumen[nombre] = '-';
     }
   });
   const ul = document.createElement('ul');
@@ -270,10 +279,10 @@ function generarListaCompras() {
     li.textContent = cantidad === '-' ? nombre : `${cantidad} ${nombre}`;
     ul.appendChild(li);
   });
-  cont.appendChild(ul);
+  listaContenedor.appendChild(ul);
 }
 
-// Al iniciar
+// Inicializar
 aplicarTemaGuardado();
 mostrarRecetas();
 mostrarPlanificador();
