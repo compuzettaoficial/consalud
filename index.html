@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍏 Recetas Saludables</title>
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍏 Recetas Saludables</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <h1>🍏 Recetas Saludables</h1>
@@ -37,8 +37,30 @@
     <button onclick="guardarReceta()">💾 Guardar</button>
   </div>
 
+  <div id="modal-dia" style="display:none;">
+    <p>Selecciona días para agendar:</p>
+    <label><input type="checkbox" value="Lunes"> Lunes</label>
+    <label><input type="checkbox" value="Martes"> Martes</label>
+    <label><input type="checkbox" value="Miércoles"> Miércoles</label>
+    <label><input type="checkbox" value="Jueves"> Jueves</label>
+    <label><input type="checkbox" value="Viernes"> Viernes</label>
+    <label><input type="checkbox" value="Sábado"> Sábado</label>
+    <label><input type="checkbox" value="Domingo"> Domingo</label>
+    <button onclick="confirmarAgendar()">✅ Agendar</button>
+    <button onclick="cerrarModalDia()">❌ Cancelar</button>
+  </div>
+
   <h2>📋 Recetas públicas</h2>
   <div id="recetas"></div>
+
+  <h2>⭐ Favoritos</h2>
+  <div id="favoritos"></div>
+
+  <h2>📆 Planificador</h2>
+  <div id="planificador"></div>
+
+  <h2>🛒 Lista de Compras</h2>
+  <div id="lista-compras"></div>
 
 <script src="app.js"></script>
 </body>
