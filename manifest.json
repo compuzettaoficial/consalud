@@ -3,13 +3,11 @@
   "short_name": "Recetas",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#6b4b9a",
-  "icons": [
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#f5f5f5",
+  "description": "App para ver y guardar recetas saludables",
+  "icons": [{
+    "src": "icon.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  }]
 }
