@@ -26,7 +26,14 @@
         <input type="text" id="tiempo" placeholder="Tiempo de preparación" />
         <input type="text" id="imagen" placeholder="URL de imagen" />
         <textarea id="preparacion" placeholder="Pasos de preparación"></textarea>
-        <input type="text" id="categoria" placeholder="Categoría (opcional)" />
+        <label>Categoría:</label>
+        <select id="categoria">
+          <option value="">Sin categoría</option>
+          <option value="Desayuno">Desayuno</option>
+          <option value="Almuerzo">Almuerzo</option>
+          <option value="Cena">Cena</option>
+          <option value="Snack">Snack</option>
+        </select>
         <button onclick="guardarReceta()">Guardar Receta</button>
       </div>
     </div>
