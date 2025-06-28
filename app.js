@@ -1,15 +1,25 @@
-firebase.auth().onAuthStateChanged(user => {
+// Parte 1: Configuración y autenticación
+let usuarioActual = null;
+let recetaAAgendar = null;
+
+firebase.auth().onAuthStateChanged(async user => {
   const info = document.getElementById('user-info');
-  const admin = (user && user.email === 'compuzettaoficial@gmail.com');
   if (user) {
-    info.innerHTML = `👋 Bienvenido ${user.displayName}`;
-    if (admin) document.getElementById('admin-actions').style.display = 'block';
-    cargarRecetas(admin);
-    cargarFavoritos(user.uid);
-    cargarPlanificador(user.uid);
+    usuarioActual = user;
+    info.textContent = '👋 Bienvenido ' + user.displayName;
+    if (user.email === 'compuzettaoficial@gmail.com') {
+      document.getElementById('admin-actions').style.display = 'block';
+    } else {
+      document.getElementById('admin-actions').style.display = 'none';
+    }
+    cargarRecetas();
+    cargarFavoritos();
+    cargarPlanificador();
   } else {
-    info.innerHTML = 'No has iniciado sesión';
+    usuarioActual = null;
+    info.textContent = 'No has iniciado sesión';
     document.getElementById('admin-actions').style.display = 'none';
+    document.getElementById('recetas').innerHTML = '';
     document.getElementById('favoritos').innerHTML = '';
     document.getElementById('planificador').innerHTML = '';
   }
@@ -17,201 +27,133 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loginConGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(e => alert('Error: ' + e.message));
+  firebase.auth().signInWithPopup(provider)
+    .catch(error => alert('Error al iniciar sesión: ' + error.message));
 }
 
 function logout() {
   firebase.auth().signOut();
 }
+// Parte 2: Funciones de recetas, favoritos y planificador
 
-// ADMIN: Agregar / editar / eliminar
-function mostrarFormulario(id) {
-  document.getElementById('formulario').style.display = 'block';
-  if (id) {
-    db.collection('recetas').doc(id).get().then(doc => {
-      const r = doc.data();
-      document.getElementById('titulo').value = r.titulo;
-      document.getElementById('ingredientes').value = r.ingredientes;
-      document.getElementById('tiempo').value = r.tiempo;
-      document.getElementById('imagen').value = r.imagen;
-      document.getElementById('categoria').value = r.categoria;
-      document.getElementById('preparacion').value = r.preparacion;
-      document.getElementById('formulario').dataset.editId = id;
-    });
+async function cargarRecetas() {
+  const snap = await firebase.firestore().collection('recetas').get();
+  const cont = document.getElementById('recetas');
+  cont.innerHTML = '';
+  snap.forEach(doc => {
+    const r = doc.data();
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3>${r.titulo}</h3>
+      <p>⏱ ${r.tiempo}</p>
+      <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
+      <p><strong>Preparación:</strong> ${r.preparacion}</p>
+      <p><strong>Categoría:</strong> ${r.categoria}</p>
+      <img src="${r.imagen || 'https://via.placeholder.com/150'}" style="width:100px;">
+      <button onclick="marcarFavorito('${doc.id}')">❤️ Favorito</button>
+      <button onclick="abrirModalAgendar('${doc.id}')">📆 Agendar</button>
+      ${usuarioActual.email === 'compuzettaoficial@gmail.com' ? `
+        <button onclick="eliminarReceta('${doc.id}')">🗑️ Eliminar</button>
+      ` : ''}
+    `;
+    cont.appendChild(card);
+  });
+}
+
+async function marcarFavorito(recetaId) {
+  if (!usuarioActual) return;
+  const ref = firebase.firestore()
+    .collection('usuarios').doc(usuarioActual.uid)
+    .collection('favoritos').doc(recetaId);
+  const doc = await ref.get();
+  if (doc.exists) {
+    await ref.delete();
   } else {
-    limpiarFormulario();
-    delete document.getElementById('formulario').dataset.editId;
+    await ref.set({ timestamp: Date.now() });
   }
+  cargarFavoritos();
 }
 
-function limpiarFormulario() {
-  document.getElementById('titulo').value = '';
-  document.getElementById('ingredientes').value = '';
-  document.getElementById('tiempo').value = '';
-  document.getElementById('imagen').value = '';
-  document.getElementById('categoria').value = '';
-  document.getElementById('preparacion').value = '';
-}
-
-function guardarReceta() {
-  const receta = {
-    titulo: document.getElementById('titulo').value,
-    ingredientes: document.getElementById('ingredientes').value,
-    tiempo: document.getElementById('tiempo').value,
-    imagen: document.getElementById('imagen').value,
-    categoria: document.getElementById('categoria').value,
-    preparacion: document.getElementById('preparacion').value
-  };
-  const editId = document.getElementById('formulario').dataset.editId;
-
-  if (editId) {
-    db.collection('recetas').doc(editId).update(receta).then(() => {
-      alert('Receta actualizada');
-      document.getElementById('formulario').style.display = 'none';
-      cargarRecetas(true);
-    });
-  } else {
-    db.collection('recetas').add(receta).then(() => {
-      alert('Receta guardada');
-      document.getElementById('formulario').style.display = 'none';
-      cargarRecetas(true);
-    });
-  }
-}
-
-function eliminarReceta(id) {
-  if (confirm('¿Eliminar esta receta?')) {
-    db.collection('recetas').doc(id).delete().then(() => {
-      alert('Eliminada');
-      cargarRecetas(true);
-    });
-  }
-}
-
-// TODOS LOS USUARIOS: Favoritos
-function toggleFavorito(recetaId) {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
-  const ref = db.collection('usuarios').doc(user.uid).collection('favoritos').doc(recetaId);
-  ref.get().then(doc => {
-    if (doc.exists) {
-      ref.delete().then(() => cargarFavoritos(user.uid));
-    } else {
-      ref.set({ activo: true }).then(() => cargarFavoritos(user.uid));
+async function cargarFavoritos() {
+  if (!usuarioActual) return;
+  const snap = await firebase.firestore()
+    .collection('usuarios').doc(usuarioActual.uid)
+    .collection('favoritos').get();
+  const cont = document.getElementById('favoritos');
+  cont.innerHTML = '';
+  for (let fav of snap.docs) {
+    const recetaDoc = await firebase.firestore().collection('recetas').doc(fav.id).get();
+    if (recetaDoc.exists) {
+      const r = recetaDoc.data();
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<h4>${r.titulo}</h4><p>${r.tiempo}</p>`;
+      cont.appendChild(card);
     }
-  });
+  }
 }
 
-function cargarFavoritos(uid) {
-  db.collection('usuarios').doc(uid).collection('favoritos').get().then(snapshot => {
-    const favIds = snapshot.docs.map(d => d.id);
-    if (favIds.length === 0) {
-      document.getElementById('favoritos').innerHTML = '<p>No tienes favoritos aún.</p>';
-      return;
-    }
-    db.collection('recetas').get().then(rs => {
-      const cont = document.getElementById('favoritos');
-      cont.innerHTML = '';
-      rs.forEach(doc => {
-        if (favIds.includes(doc.id)) {
-          const r = doc.data();
-          cont.innerHTML += cardReceta(doc.id, r, false, true);
-        }
-      });
-    });
-  });
+function abrirModalAgendar(id) {
+  recetaAAgendar = id;
+  document.getElementById('modal-dia').style.display = 'block';
 }
 
-// TODOS: Planificador
-function agendar(recetaId, dia) {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
-  db.collection('usuarios').doc(user.uid).collection('planificador').add({ recetaId, dia }).then(() => {
-    alert('Agendada');
-    cargarPlanificador(user.uid);
-  });
+function cerrarModalDia() {
+  document.getElementById('modal-dia').style.display = 'none';
 }
 
-function cargarPlanificador(uid) {
-  db.collection('usuarios').doc(uid).collection('planificador').get().then(snapshot => {
-    const plan = {};
-    snapshot.forEach(d => {
-      const { recetaId, dia } = d.data();
-      if (!plan[dia]) plan[dia] = [];
-      plan[dia].push(recetaId);
-    });
-    mostrarPlanificador(plan);
+async function confirmarAgendar() {
+  if (!usuarioActual || !recetaAAgendar) return;
+  const dias = Array.from(document.querySelectorAll('#modal-dia input[type=checkbox]:checked'))
+               .map(cb => cb.value);
+  const batch = firebase.firestore().batch();
+  dias.forEach(dia => {
+    const ref = firebase.firestore()
+      .collection('usuarios').doc(usuarioActual.uid)
+      .collection('planificador').doc();
+    batch.set(ref, { recetaId: recetaAAgendar, dia });
   });
+  await batch.commit();
+  cerrarModalDia();
+  cargarPlanificador();
 }
 
-function mostrarPlanificador(plan) {
+async function cargarPlanificador() {
+  if (!usuarioActual) return;
+  const snap = await firebase.firestore()
+    .collection('usuarios').doc(usuarioActual.uid)
+    .collection('planificador').get();
   const cont = document.getElementById('planificador');
   cont.innerHTML = '';
-  const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  dias.forEach(dia => {
-    const ids = plan[dia] || [];
-    if (ids.length > 0) {
-      db.collection('recetas').get().then(rs => {
-        cont.innerHTML += `<h4>${dia}</h4>`;
-        ids.forEach(id => {
-          const doc = rs.docs.find(d => d.id === id);
-          if (doc) {
-            const r = doc.data();
-            cont.innerHTML += `<div class='card'>
-              <strong>${r.titulo}</strong> - ${r.tiempo}
-            </div>`;
-          }
-        });
-      });
+  for (let p of snap.docs) {
+    const recetaDoc = await firebase.firestore().collection('recetas').doc(p.data().recetaId).get();
+    if (recetaDoc.exists) {
+      const r = recetaDoc.data();
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<h4>${r.titulo}</h4><p>Día: ${p.data().dia}</p>`;
+      cont.appendChild(card);
     }
-  });
-}
-
-// TODOS: Compartir
-function compartirReceta(id) {
-  const url = `${window.location.href}?receta=${id}`;
-  navigator.clipboard.writeText(url).then(() => alert('Enlace copiado: ' + url));
-}
-
-// CARD HTML
-function cardReceta(id, r, esAdmin, esFavorita) {
-  return `<div class='card'>
-    <h3>${r.titulo}</h3>
-    <p>⏱ ${r.tiempo}</p>
-    <p>${r.categoria}</p>
-    <img src="${r.imagen}" style="max-width:100px;">
-    <button onclick="toggleFavorito('${id}')">${esFavorita ? '❤️ Quitar' : '🤍 Favorito'}</button>
-    <button onclick="compartirReceta('${id}')">🔗 Compartir</button>
-    <button onclick="agendar('${id}', prompt('Día (Lunes, Martes,...)'))">📅 Agendar</button>
-    ${esAdmin ? `<button onclick="mostrarFormulario('${id}')">✏️ Editar</button>
-    <button onclick="eliminarReceta('${id}')">🗑️ Eliminar</button>` : ''}
-  </div>`;
-}
-
-// Cargar recetas
-function cargarRecetas(esAdmin) {
-  const user = firebase.auth().currentUser;
-  let favIds = [];
-  if (user) {
-    db.collection('usuarios').doc(user.uid).collection('favoritos').get().then(snapshot => {
-      favIds = snapshot.docs.map(d => d.id);
-      db.collection('recetas').get().then(rs => {
-        const cont = document.getElementById('recetas');
-        cont.innerHTML = '';
-        rs.forEach(doc => {
-          const r = doc.data();
-          cont.innerHTML += cardReceta(doc.id, r, esAdmin, favIds.includes(doc.id));
-        });
-      });
-    });
-  } else {
-    db.collection('recetas').get().then(rs => {
-      const cont = document.getElementById('recetas');
-      cont.innerHTML = '';
-      rs.forEach(doc => {
-        const r = doc.data();
-        cont.innerHTML += cardReceta(doc.id, r, esAdmin, false);
-      });
-    });
   }
+}
+
+async function guardarReceta() {
+  if (!usuarioActual || usuarioActual.email !== 'compuzettaoficial@gmail.com') return;
+  const titulo = document.getElementById('titulo').value;
+  const ingredientes = document.getElementById('ingredientes').value;
+  const tiempo = document.getElementById('tiempo').value;
+  const imagen = document.getElementById('imagen').value;
+  const categoria = document.getElementById('categoria').value;
+  const preparacion = document.getElementById('preparacion').value;
+  await firebase.firestore().collection('recetas').add({
+    titulo, ingredientes, tiempo, imagen, categoria, preparacion
+  });
+  cargarRecetas();
+}
+
+async function eliminarReceta(id) {
+  if (!usuarioActual || usuarioActual.email !== 'compuzettaoficial@gmail.com') return;
+  await firebase.firestore().collection('recetas').doc(id).delete();
+  cargarRecetas();
 }
