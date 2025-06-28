@@ -1,17 +1,7 @@
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open('recetas-cache').then(cache => cache.addAll([
-      '/',
-      '/index.html',
-      '/style.css',
-      '/app.js',
-      '/firebase-config.js',
-      '/manifest.json'
-    ]))
-  );
+  console.log('Service Worker instalado');
 });
+
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(res => res || fetch(e.request))
-  );
+  e.respondWith(fetch(e.request).catch(() => new Response('Offline')));
 });
