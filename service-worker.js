@@ -1,6 +1,6 @@
 self.addEventListener('install', e => {
-  console.log('Service Worker instalado');
+  e.waitUntil(caches.open('v1').then(cache => cache.addAll(['index.html','style.css','app.js'])));
 });
 self.addEventListener('fetch', e => {
-  // Cache opcional
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });

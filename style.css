@@ -1,19 +1,4 @@
-body {
-  font-family: sans-serif;
-  background: #F5F5F5;
-  color: #333;
-}
-.dark {
-  background: #333;
-  color: #F5F5F5;
-}
-.receta {
-  border: 1px solid #ccc;
-  background: white;
-  padding: 10px;
-  margin: 10px;
-  border-radius: 8px;
-}
-.dark .receta {
-  background: #555;
-}
+body { font-family: sans-serif; background: #F5F5F5; color: #333; }
+.oscuro { background: #333; color: #F5F5F5; }
+.tarjeta { border:1px solid #ccc; margin:10px; padding:10px; background:white; }
+.oscuro .tarjeta { background:#444; }
