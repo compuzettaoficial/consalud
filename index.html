@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,40 +6,25 @@
   <title>🍏 Recetas Saludables</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <script src="firebase-config.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <header>
     <h1>🍏 Recetas Saludables</h1>
-    <button onclick="toggleTheme()">🌙/☀️</button>
-    <button onclick="loginConGoogle()">🔐 Login con Google</button>
-    <button onclick="logout()">🚪 Logout</button>
+    <button id="toggle-theme">🌙/☀️</button>
+    <button id="login-btn">🔐 Login con Google</button>
+    <button id="logout-btn">🚪 Logout</button>
+    <input type="text" id="search-input" placeholder="Buscar por título o ingrediente...">
   </header>
+  <div id="user-info"></div>
   <main>
-    <div id="user-info"></div>
-    <div id="buscador">
-      <input type="text" id="search" placeholder="Buscar por título o ingrediente..." oninput="buscarRecetas()">
-    </div>
-    <div id="recetas"></div>
-    <section id="admin-panel" style="display:none;">
-      <h2>Agregar Nueva Receta</h2>
-      <input id="titulo" placeholder="Título">
-      <input id="ingredientes" placeholder="Ingredientes separados por coma">
-      <input id="tiempo" placeholder="Tiempo (ej: 10 minutos)">
-      <input id="imagen" placeholder="URL de imagen">
-      <textarea id="preparacion" placeholder="Preparación"></textarea>
-      <select id="categoria">
-        <option>Desayuno</option>
-        <option>Almuerzo</option>
-        <option>Cena</option>
-        <option>Snacks</option>
-      </select>
-      <button onclick="agregarReceta()">➕ Agregar</button>
-    </section>
+    <section id="recetas-publicas"></section>
   </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
