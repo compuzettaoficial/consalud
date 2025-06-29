@@ -1,45 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍏 Recetas Saludables</title>
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍏 Recetas Saludables</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <h1>🍏 Recetas Saludables</h1>
-  <button onclick="loginConGoogle()">🔐 Login con Google</button>
-  <button onclick="logout()">🚪 Logout</button>
+  <header>
+    <h1>🍏 Recetas Saludables</h1>
+    <button id="toggle-theme">🌙/☀️</button>
+    <button id="login-btn">🔐 Login con Google</button>
+    <button id="logout-btn" style="display:none">🚪 Logout</button>
+  </header>
   <div id="user-info"></div>
-
-  <div id="admin-actions" style="display:none;">
-    <button onclick="mostrarFormulario()">➕ Agregar Receta</button>
-  </div>
-
-  <div id="formulario" style="display:none;">
-    <input type="text" id="titulo" placeholder="Título" />
-    <input type="text" id="ingredientes" placeholder="Ingredientes" />
-    <input type="text" id="tiempo" placeholder="Tiempo" />
-    <input type="text" id="imagen" placeholder="URL de imagen" />
-    <select id="categoria">
-      <option value="">Selecciona categoría</option>
-      <option value="Desayuno">Desayuno</option>
-      <option value="Almuerzo">Almuerzo</option>
-      <option value="Cena">Cena</option>
-      <option value="Snack">Snack</option>
-    </select>
-    <textarea id="preparacion" placeholder="Preparación"></textarea>
-    <button onclick="guardarReceta()">💾 Guardar</button>
-  </div>
-
-  <h2>📋 Recetas públicas</h2>
-  <div id="recetas"></div>
-
-<script src="app.js"></script>
+  <nav id="menu" style="display:none">
+    <button onclick="mostrarSeccion('publicas')">📋 Recetas públicas</button>
+    <button onclick="mostrarSeccion('favoritos')">⭐ Favoritos</button>
+    <button onclick="mostrarSeccion('planificador')">📆 Planificador</button>
+    <button onclick="mostrarSeccion('compras')">🛒 Lista de Compras</button>
+  </nav>
+  <main>
+    <section id="publicas"></section>
+    <section id="favoritos" style="display:none"></section>
+    <section id="planificador" style="display:none"></section>
+    <section id="compras" style="display:none"></section>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

@@ -1,7 +1,10 @@
 self.addEventListener('install', e => {
-  console.log('Service Worker instalado');
+  e.waitUntil(
+    caches.open('v1').then(cache => cache.addAll(['index.html', 'style.css', 'app.js']))
+  );
 });
-
 self.addEventListener('fetch', e => {
-  e.respondWith(fetch(e.request).catch(() => new Response('Offline')));
+  e.respondWith(
+    caches.match(e.request).then(resp => resp || fetch(e.request))
+  );
 });
