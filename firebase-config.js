@@ -1,3 +1,4 @@
+
 const firebaseConfig = {
   apiKey: "AIzaSyBcJ4tbucMLF3lTuDne5cyin4oyoVhTfSs",
   authDomain: "consalud-recetas.firebaseapp.com",
@@ -8,3 +9,4 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
