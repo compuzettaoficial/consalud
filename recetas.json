@@ -1,57 +1,154 @@
 [
   {
-    "id": 1,
-    "titulo": "Ensalada de Quinoa",
-    "ingredientes": "1 taza quinoa, 2 tomates, 1 pepino, 1 limón, sal",
+    "titulo": "Ensalada de Quinoa Detox",
+    "ingredientes": "1 taza quinoa, 1 pepino, 2 tomates, 1 aguacate, jugo de limón, sal",
     "tiempo": "15 min",
-    "imagen": "https://via.placeholder.com/300x200?text=Ensalada+Quinoa",
-    "preparacion": "Cocer la quinoa, cortar las verduras, mezclar y aliñar con limón y sal.",
-    "categoria": "Almuerzo",
-    "slug": "ensalada-de-quinoa-1",
-    "favorito": false
+    "imagen": "https://via.placeholder.com/300?text=Quinoa",
+    "preparacion": "Cocina la quinoa, corta las verduras, mezcla y aliña.",
+    "categoria": "Almuerzo"
   },
   {
-    "id": 2,
-    "titulo": "Smoothie de Fresa",
-    "ingredientes": "1 taza fresas, 1 plátano, 1 vaso leche vegetal",
+    "titulo": "Smoothie de Espinaca y Plátano",
+    "ingredientes": "1 taza espinaca, 1 plátano, 1 taza leche vegetal",
     "tiempo": "5 min",
-    "imagen": "https://via.placeholder.com/300x200?text=Smoothie+Fresa",
-    "preparacion": "Batir todos los ingredientes hasta obtener una mezcla suave.",
-    "categoria": "Desayuno",
-    "slug": "smoothie-de-fresa-2",
-    "favorito": false
+    "imagen": "https://via.placeholder.com/300?text=Smoothie",
+    "preparacion": "Licúa todo hasta textura homogénea.",
+    "categoria": "Desayuno"
   },
   {
-    "id": 3,
-    "titulo": "Tostadas Integrales",
-    "ingredientes": "2 rebanadas pan integral, aguacate, tomate, aceite de oliva",
-    "tiempo": "10 min",
-    "imagen": "https://via.placeholder.com/300x200?text=Tostadas+Integrales",
-    "preparacion": "Tostar el pan, untar aguacate, añadir rodajas de tomate y un chorrito de aceite.",
-    "categoria": "Desayuno",
-    "slug": "tostadas-integrales-3",
-    "favorito": false
-  },
-  {
-    "id": 4,
-    "titulo": "Sopa de Verduras",
-    "ingredientes": "2 zanahorias, 1 calabacín, 1 papa, caldo de verduras",
+    "titulo": "Tacos de Verduras al Horno",
+    "ingredientes": "4 tortillas, 1 pimiento, 1 cebolla, 1 calabacín, especias",
     "tiempo": "25 min",
-    "imagen": "https://via.placeholder.com/300x200?text=Sopa+Verduras",
-    "preparacion": "Cortar las verduras, hervir en el caldo hasta que estén tiernas.",
-    "categoria": "Cena",
-    "slug": "sopa-de-verduras-4",
-    "favorito": false
+    "imagen": "https://via.placeholder.com/300?text=Tacos",
+    "preparacion": "Asa las verduras, luego arma los tacos.",
+    "categoria": "Cena"
   },
   {
-    "id": 5,
-    "titulo": "Barras de Avena",
-    "ingredientes": "2 tazas avena, miel, frutos secos",
+    "titulo": "Yogur con Granola y Frutos Rojos",
+    "ingredientes": "1 yogur natural, 1/2 taza granola, 1/2 taza frutos rojos",
+    "tiempo": "3 min",
+    "imagen": "https://via.placeholder.com/300?text=Yogur",
+    "preparacion": "Sirve el yogur y añade granola y frutas encima.",
+    "categoria": "Snack"
+  },
+  {
+    "titulo": "Brownie Vegano de Chocolate",
+    "ingredientes": "1 taza avena, 1/2 taza cacao, 1 plátano, 1/4 taza aceite",
     "tiempo": "20 min",
-    "imagen": "https://via.placeholder.com/300x200?text=Barras+Avena",
-    "preparacion": "Mezclar todo, hornear 15 min, dejar enfriar y cortar en barras.",
-    "categoria": "Snack",
-    "slug": "barras-de-avena-5",
-    "favorito": false
+    "imagen": "https://via.placeholder.com/300?text=Brownie",
+    "preparacion": "Mezcla todo y hornea a 180°C por 15‑20 min.",
+    "categoria": "Postre"
+  },
+  {
+    "titulo": "Avena Nocturna con Chía",
+    "ingredientes": "1/2 taza avena, 1 cucharada chía, 1 taza leche vegetal, miel",
+    "tiempo": "5 min (reposo)",
+    "imagen": "https://via.placeholder.com/300?text=Avena+Nocturna",
+    "preparacion": "Mezcla y deja reposar en la nevera toda la noche.",
+    "categoria": "Desayuno"
+  },
+  {
+    "titulo": "Wrap de Hummus y Vegetales",
+    "ingredientes": "1 tortilla integral, 3 cucharadas hummus, zanahoria, lechuga, pepino",
+    "tiempo": "10 min",
+    "imagen": "https://via.placeholder.com/300?text=Wrap",
+    "preparacion": "Unta hummus y añade vegetales. Enrolla y sirve.",
+    "categoria": "Snack"
+  },
+  {
+    "titulo": "Pasta Integral con Pesto",
+    "ingredientes": "100 g pasta integral, 2 cucharadas pesto, tomate cherry",
+    "tiempo": "20 min",
+    "imagen": "https://via.placeholder.com/300?text=Pasta",
+    "preparacion": "Cocina la pasta, mezcla con pesto y añade tomates.",
+    "categoria": "Almuerzo"
+  },
+  {
+    "titulo": "Sopa de Lentejas con Verduras",
+    "ingredientes": "1 taza lentejas, zanahoria, cebolla, apio, caldo de verduras",
+    "tiempo": "40 min",
+    "imagen": "https://via.placeholder.com/300?text=Sopa",
+    "preparacion": "Sofríe verduras, añade lentejas y caldo. Cocina hasta tierno.",
+    "categoria": "Cena"
+  },
+  {
+    "titulo": "Manzana Asada con Canela",
+    "ingredientes": "1 manzana, canela, miel",
+    "tiempo": "15 min",
+    "imagen": "https://via.placeholder.com/300?text=Manzana",
+    "preparacion": "Corta la manzana, espolvorea canela y hornea 15 min.",
+    "categoria": "Postre"
+  },
+  {
+    "titulo": "Ensalada Caprese Vegana",
+    "ingredientes": "1 tomate, 1 bola albahaca, 1 cucharada pesto vegano",
+    "tiempo": "10 min",
+    "imagen": "https://via.placeholder.com/300?text=Caprese",
+    "preparacion": "Corta tomate, añade pesto y albahaca fresca.",
+    "categoria": "Almuerzo"
+  },
+  {
+    "titulo": "Bowl de Acai con Frutas",
+    "ingredientes": "100 g acai, plátano, fresas, granola",
+    "tiempo": "5 min",
+    "imagen": "https://via.placeholder.com/300?text=Acai+Bowl",
+    "preparacion": "Licúa acai y cubre con frutas y granola.",
+    "categoria": "Desayuno"
+  },
+  {
+    "titulo": "Chips de Kale Horneadas",
+    "ingredientes": "100 g kale, aceite de oliva, sal",
+    "tiempo": "15 min",
+    "imagen": "https://via.placeholder.com/300?text=Chips+Kale",
+    "preparacion": "Aliña kale y hornea hasta crujiente.",
+    "categoria": "Snack"
+  },
+  {
+    "titulo": "Pizza de Berenjena",
+    "ingredientes": "1 berenjena, salsa de tomate, queso vegano, albahaca",
+    "tiempo": "30 min",
+    "imagen": "https://via.placeholder.com/300?text=Pizza",
+    "preparacion": "Corta berenjena, añade toppings y hornea.",
+    "categoria": "Cena"
+  },
+  {
+    "titulo": "Barritas de Avena y Miel",
+    "ingredientes": "2 tazas avena, 1/2 taza miel, 1/4 taza frutos secos",
+    "tiempo": "20 min",
+    "imagen": "https://via.placeholder.com/300?text=Barritas",
+    "preparacion": "Mezcla, presiona y hornea.",
+    "categoria": "Snack"
+  },
+  {
+    "titulo": "Polenta al Horno con Verduras",
+    "ingredientes": "1 taza polenta, calabacín, tomate, especias",
+    "tiempo": "35 min",
+    "imagen": "https://via.placeholder.com/300?text=Polenta",
+    "preparacion": "Prepara polenta, añade verduras y hornea.",
+    "categoria": "Almuerzo"
+  },
+  {
+    "titulo": "Muffins de Zanahoria y Avena",
+    "ingredientes": "1 taza avena, 1 zanahoria rallada, 2 huevos, canela",
+    "tiempo": "25 min",
+    "imagen": "https://via.placeholder.com/300?text=Muffins",
+    "preparacion": "Mezcla, hornea en moldes por 20–25 min.",
+    "categoria": "Postre"
+  },
+  {
+    "titulo": "Brochetas Vegetales al Grill",
+    "ingredientes": "pimiento, cebolla, champiñones, calabacín, aceite",
+    "tiempo": "20 min",
+    "imagen": "https://via.placeholder.com/300?text=Brochetas",
+    "preparacion": "Arma brochetas y asa hasta tiernas.",
+    "categoria": "Cena"
+  },
+  {
+    "titulo": "Parfait de Yogur y Mango",
+    "ingredientes": "1 yogur, 1 mango picado, granola",
+    "tiempo": "5 min",
+    "imagen": "https://via.placeholder.com/300?text=Parfait",
+    "preparacion": "Capas de yogur, mango y granola en vaso.",
+    "categoria": "Snack"
   }
 ]
