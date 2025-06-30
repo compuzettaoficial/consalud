@@ -42,6 +42,7 @@ auth.onAuthStateChanged(async user => {
   await cargarRecetas();
   await cargarFavoritos();
   await cargarPlanificador();
+  await generarListaCompras();
 });
 
 // CRUD Recetas
@@ -98,6 +99,7 @@ async function eliminarReceta(id) {
     }
     await cargarRecetas();
     await cargarPlanificador();
+    await generarListaCompras();
   } catch (e) {
     alert('Error eliminando receta: ' + e.message);
   }
@@ -178,6 +180,7 @@ async function agendarEnDias() {
     }
     cerrarModalDia();
     await cargarPlanificador();
+    await generarListaCompras();
   } catch (e) {
     alert('Error agendando: ' + e.message);
   }
@@ -212,8 +215,7 @@ async function cargarPlanificador() {
     }
   }
 }
-// Quitar quitar compras por probar si es alli
-generarListaCompras();
+
 
 // Quitar receta agendada
 async function quitarAgendado(dia, id) {
@@ -223,6 +225,7 @@ async function quitarAgendado(dia, id) {
       .collection('planificador').doc(dia)
       .update({ recetas: firebase.firestore.FieldValue.arrayRemove(id) });
     await cargarPlanificador();
+    await generarListaCompras();
   } catch (e) {
     alert('Error quitando del planificador: ' + e.message);
   }
@@ -313,4 +316,3 @@ async function generarListaCompras() {
   });
   listaContenedor.appendChild(ul);
 }
-
