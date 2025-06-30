@@ -212,7 +212,8 @@ async function cargarPlanificador() {
     }
   }
 }
-
+// Quitar quitar compras por probar si es alli
+generarListaCompras();
 
 // Quitar receta agendada
 async function quitarAgendado(dia, id) {
@@ -270,3 +271,46 @@ function cerrarFormulario() {
 
 // Inicial
 aplicarTemaGuardado();
+// Genera lista de compras
+async function generarListaCompras() {
+  if (!usuarioActual) return;
+  const listaContenedor = document.getElementById('lista-compras');
+  listaContenedor.innerHTML = '';
+  let todosIngredientes = [];
+  const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  for (const dia of dias) {
+    const doc = await db.collection('usuarios').doc(usuarioActual.uid)
+      .collection('planificador').doc(dia).get();
+    const ids = (doc.exists && doc.data().recetas) || [];
+    ids.forEach(id => {
+      const receta = recetas.find(r => r.id === id);
+      if (receta) {
+        todosIngredientes.push(...receta.ingredientes.split(',').map(i => i.trim()));
+      }
+    });
+  }
+  if (todosIngredientes.length === 0) {
+    listaContenedor.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
+    return;
+  }
+  const resumen = {};
+  todosIngredientes.forEach(item => {
+    const match = item.match(/^(\d+)\s+(.*)/);
+    if (match) {
+      const cantidad = parseInt(match[1]);
+      const nombre = match[2].toLowerCase();
+      resumen[nombre] = (resumen[nombre] || 0) + cantidad;
+    } else {
+      const nombre = item.toLowerCase();
+      if (!(nombre in resumen)) resumen[nombre] = '-';
+    }
+  });
+  const ul = document.createElement('ul');
+  Object.entries(resumen).forEach(([nombre, cantidad]) => {
+    const li = document.createElement('li');
+    li.textContent = cantidad === '-' ? nombre : `${cantidad} ${nombre}`;
+    ul.appendChild(li);
+  });
+  listaContenedor.appendChild(ul);
+}
+
