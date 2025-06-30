@@ -185,13 +185,14 @@ async function agendarEnDias() {
 
 async function cargarPlanificador() {
   if (!usuarioActual) return;
-  const cont = document.getElementById('planificador'); cont.innerHTML = '';
+  const cont = document.getElementById('planificador'); 
+  cont.innerHTML = '';
   const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   for (const dia of dias) {
     const doc = await db.collection('usuarios').doc(usuarioActual.uid)
       .collection('planificador').doc(dia).get();
     const ids = (doc.exists && doc.data().recetas) || [];
-    if (ids.length > 0) {
+    if (ids && ids.length > 0) {
       const div = document.createElement('div'); div.className = 'card';
       div.innerHTML = `<h4>${dia}</h4>`;
       ids.forEach(id => {
@@ -204,10 +205,14 @@ async function cargarPlanificador() {
             </div>`;
         }
       });
-      cont.appendChild(div);
+      // Solo añadir si efectivamente hay recetas válidas
+      if (div.querySelectorAll('span').length > 0) {
+        cont.appendChild(div);
+      }
     }
   }
 }
+
 
 // Quitar receta agendada
 async function quitarAgendado(dia, id) {
