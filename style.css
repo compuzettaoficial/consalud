@@ -1,9 +1,9 @@
+/* Reset y base */
 body {
+  margin: 0;
   font-family: Arial, sans-serif;
   background: #f4f4f4;
   color: #333;
-  margin: 0;
-  padding: 0;
 }
 
 body.dark {
@@ -11,162 +11,37 @@ body.dark {
   color: #eee;
 }
 
+/* Barra superior */
 .topbar {
-  background-color: #6b4b9a;
-  color: white;
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.topbar .logo {
-  width: 36px;
-  height: auto;
-  margin-right: 10px;
+  justify-content: space-between;
+  background: #6b4b9a;
+  color: white;
+  padding: 8px 15px;
 }
 
 .topbar h1 {
-  flex: 1;
-  font-size: 20px;
   margin: 0;
+  font-size: 1.2em;
 }
 
-.menu-btn {
-  font-size: 24px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  color: white;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
-}
-
-h2 {
-  color: #6b4b9a;
-}
-
-.agregar-btn {
-  background: #6b4b9a;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  margin: 10px 0;
-  border-radius: 8px;
+.topbar .menu-btn {
+  font-size: 1.5em;
   cursor: pointer;
 }
 
-input, textarea, select {
-  width: 100%;
-  padding: 8px;
-  margin: 6px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+.topbar .logo {
+  height: 32px;
+  margin: 0 10px;
 }
 
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 11;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.5);
-}
-
-.modal-content {
-  background-color: #fff;
-  margin: 10% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 12px;
-}
-
-body.dark .modal-content {
-  background: #444;
-  color: #fff;
-}
-
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 26px;
-  cursor: pointer;
-}
-
-#recetas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-}
-
-.card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
-}
-
-.card:hover {
-  transform: scale(1.02);
-}
-
-body.dark .card {
-  background: #333;
-  color: #eee;
-  border: 1px solid #555;
-}
-
-.card img {
-  width: 100%;
-  max-height: 180px; /* imagen más discreta */
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.card h3 {
-  margin: 8px 0 4px 0;
-  font-size: 18px;
-  color: #6b4b9a;
-}
-
-.card p {
-  font-size: 14px;
-  margin: 4px 0;
-}
-
-.card button {
-  background: #6b4b9a;
-  color: white;
-  border: none;
-  padding: 5px 8px;
-  margin: 4px 2px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-.card button:hover {
-  opacity: 0.9;
-}
-
-/* Sidebar (menú sándwich) */
+/* Sidebar */
 .sidebar {
   height: 100%;
   width: 0;
   position: fixed;
-  z-index: 12;
+  z-index: 2000;
   top: 0;
   left: 0;
   background-color: #6b4b9a;
@@ -176,22 +51,159 @@ body.dark .card {
 }
 
 .sidebar a {
-  padding: 8px 8px 8px 32px;
+  padding: 8px 20px;
   text-decoration: none;
-  color: #fff;
+  color: white;
   display: block;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 
 .sidebar a:hover {
-  background-color: #7a5fb5;
+  background: #5a3e88;
 }
 
 .sidebar .closebtn {
   position: absolute;
   top: 10px;
-  right: 20px;
+  right: 15px;
   font-size: 28px;
   cursor: pointer;
+}
+
+/* Overlay (fondo oscuro al abrir sidebar) */
+#overlay {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+}
+
+/* Contenedor principal */
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+body.dark .container {
+  background: #333;
+}
+
+/* Botón agregar */
+.agregar-btn {
+  background: #6b4b9a;
   color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Inputs y selects */
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 3000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background: #fff;
+  margin: 8% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.close {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Cards de recetas */
+#recetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background: #e8e5f0;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+body.dark .card {
+  background: #444;
+}
+
+.card img {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Títulos */
+h2 {
+  color: #6b4b9a;
+  margin-top: 20px;
+}
+
+body.dark h2 {
+  color: #d1b3ff;
+}
+
+/* Botón tema */
+#toggle-theme {
+  background: none;
+  border: none;
+  font-size: 1.4em;
+  cursor: pointer;
+  color: white;
+}
+
+/* Botones dentro de tarjetas */
+.card button {
+  margin-top: 5px;
+  width: 100%;
+  background: #6b4b9a;
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.card button:hover {
+  background: #5a3e88;
+}
+
+/* Responsivo: mantén 2–3 columnas en desktop, 1 en mobile */
+@media (max-width: 600px) {
+  #recetas {
+    grid-template-columns: 1fr;
+  }
 }

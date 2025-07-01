@@ -3,32 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Con Salud</title>
+  <title>Con Salud 🍏</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- Barra superior -->
-  <header class="topbar">
-    <img src="logo.svg" alt="Con Salud" class="logo">
+  <div class="topbar">
+    <span class="menu-btn" onclick="openSidebar()">☰</span>
+    <img src="https://raw.githubusercontent.com/compuzettaoficial/consalud/7211b16f92c60737eb68b592c7f056156ca8c85e/logo.svg" alt="Logo" class="logo">
     <h1>Con Salud</h1>
-    <button class="menu-btn" onclick="openNav()">☰</button>
-  </header>
-
-  <!-- Menú lateral -->
-  <div id="mySidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-    <a href="#">Mis Recetas Agendadas</a>
-    <a href="#">Mis Favoritos</a>
-    <a href="#">Lista de Compras</a>
-    <!-- Puedes agregar más enlaces -->
+    <button id="toggle-theme">🌙</button>
   </div>
 
-  <div class="container">
-    <button id="toggle-theme">🌙 Tema Oscuro</button>
-    <button id="login-btn">Iniciar Sesión</button>
-    <button id="logout-btn" style="display:none">Cerrar Sesión</button>
-    <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
+  <!-- Menú lateral -->
+  <div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">×</a>
+    <a href="#" onclick="mostrarSeccion('recetas')">🏠 Recetas</a>
+    <a href="#" onclick="mostrarSeccion('favoritos')">❤️ Favoritos</a>
+    <a href="#" onclick="mostrarSeccion('planificador')">📆 Planificador</a>
+    <a href="#" onclick="mostrarSeccion('lista-compras')">🛒 Lista de compras</a>
+    <a href="#" id="login-btn">🔑 Iniciar sesión</a>
+    <a href="#" id="logout-btn" style="display:none">🚪 Cerrar sesión</a>
+    <a href="#" class="agregar-btn" style="display:none" onclick="mostrarFormulario()">➕ Agregar Receta</a>
+  </div>
 
+  <!-- Fondo oscurecido -->
+  <div id="overlay"></div>
+
+  <!-- Contenido -->
+  <div class="container">
+    <!-- Buscador y filtros -->
     <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()">
     <select id="filtroCategoria" onchange="mostrarRecetas()">
       <option value="">Todas</option>
@@ -41,15 +46,22 @@
     </select>
     <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
 
-    <div id="recetas"></div>
-
-    <button onclick="imprimirPlanificador()">🖨️ Imprimir Planificador</button>
-
-    <h2>📆 Planificador Semanal</h2>
-    <div id="planificador"></div>
-
-    <h2>🛒 Lista de Compras</h2>
-    <div id="lista-compras"></div>
+    <!-- Secciones -->
+    <div id="seccion-recetas">
+      <div id="recetas"></div>
+    </div>
+    <div id="seccion-favoritos" style="display:none;">
+      <div id="recetas"></div>
+    </div>
+    <div id="seccion-planificador" style="display:none;">
+      <h2>📆 Planificador Semanal</h2>
+      <div id="planificador"></div>
+      <button onclick="imprimirPlanificador()">🖨️ Imprimir Planificador</button>
+    </div>
+    <div id="seccion-lista-compras" style="display:none;">
+      <h2>🛒 Lista de Compras</h2>
+      <div id="lista-compras"></div>
+    </div>
   </div>
 
   <!-- Modales -->
@@ -90,6 +102,7 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -97,11 +110,34 @@
   <script src="app.js"></script>
 
   <script>
-    function openNav() {
-      document.getElementById("mySidebar").style.width = "250px";
+    function openSidebar() {
+      document.getElementById("sidebar").style.width = "250px";
+      document.getElementById("overlay").style.display = "block";
     }
-    function closeNav() {
-      document.getElementById("mySidebar").style.width = "0";
+    function closeSidebar() {
+      document.getElementById("sidebar").style.width = "0";
+      document.getElementById("overlay").style.display = "none";
+    }
+    // Cerrar al hacer click fuera
+    document.addEventListener('click', function(e){
+      var sidebar = document.getElementById('sidebar');
+      var menuBtn = document.querySelector('.menu-btn');
+      if (sidebar.style.width === '250px' && !sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+        closeSidebar();
+      }
+    });
+    // Cerrar con ESC
+    document.addEventListener('keydown', function(e){
+      if(e.key === "Escape") closeSidebar();
+    });
+    // Mostrar sección
+    function mostrarSeccion(seccion){
+      closeSidebar();
+      ['seccion-recetas','seccion-favoritos','seccion-planificador','seccion-lista-compras'].forEach(id=>{
+        document.getElementById(id).style.display = 'none';
+      });
+      if(seccion==='recetas') mostrarRecetas();
+      document.getElementById('seccion-'+seccion).style.display='block';
     }
   </script>
 </body>
