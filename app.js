@@ -44,7 +44,6 @@ auth.onAuthStateChanged(async user => {
   await cargarPlanificador();
   await generarListaCompras();
 });
-
 // CRUD Recetas
 async function cargarRecetas() {
   try {
@@ -86,17 +85,6 @@ async function eliminarReceta(id) {
   if (!confirm('¿Eliminar receta?')) return;
   try {
     await db.collection('recetas').doc(id).delete();
-
-    // Quitarla de planificador
-    if (usuarioActual) {
-      const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-      for (const dia of dias) {
-        const ref = db.collection('usuarios').doc(usuarioActual.uid).collection('planificador').doc(dia);
-        await ref.update({
-          recetas: firebase.firestore.FieldValue.arrayRemove(id)
-        }).catch(()=>{});
-      }
-    }
     await cargarRecetas();
     await cargarPlanificador();
     await generarListaCompras();
@@ -157,7 +145,33 @@ function mostrarRecetas() {
   });
 }
 
-// Planificador
+// Favoritos
+async function toggleFavorito(id) {
+  if (!usuarioActual) return alert('Inicia sesión primero');
+  const ref = db.collection('usuarios').doc(usuarioActual.uid);
+  const doc = await ref.get();
+  let favs = (doc.exists && doc.data().favoritos) || [];
+  const esFav = favs.includes(id);
+  try {
+    if (esFav) {
+      await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(id) });
+    } else {
+      await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge:true });
+    }
+    await cargarFavoritos();
+  } catch (e) {
+    alert('Error actualizando favorito: ' + e.message);
+  }
+}
+
+async function cargarFavoritos() {
+  if (!usuarioActual) { favoritos=[]; return; }
+  const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
+  favoritos = (doc.exists && doc.data().favoritos) || [];
+  mostrarRecetas();
+}
+
+// Modal agendar
 function mostrarModalDia(id) {
   recetaAAgendar = id;
   document.getElementById('modal-dia').style.display = 'block';
@@ -186,6 +200,7 @@ async function agendarEnDias() {
   }
 }
 
+// Planificador
 async function cargarPlanificador() {
   if (!usuarioActual) return;
   const cont = document.getElementById('planificador'); 
@@ -208,16 +223,11 @@ async function cargarPlanificador() {
             </div>`;
         }
       });
-      // Solo añadir si efectivamente hay recetas válidas
-      if (div.querySelectorAll('span').length > 0) {
-        cont.appendChild(div);
-      }
+      cont.appendChild(div);
     }
   }
 }
 
-
-// Quitar receta agendada
 async function quitarAgendado(dia, id) {
   if (!usuarioActual) return;
   try {
@@ -229,31 +239,6 @@ async function quitarAgendado(dia, id) {
   } catch (e) {
     alert('Error quitando del planificador: ' + e.message);
   }
-}
-
-// Favoritos
-async function toggleFavorito(id) {
-  if (!usuarioActual) return alert('Inicia sesión primero');
-  const ref = db.collection('usuarios').doc(usuarioActual.uid);
-  const doc = await ref.get();
-  let favs = (doc.exists && doc.data().favoritos) || [];
-  const esFav = favs.includes(id);
-  try {
-    if (esFav) {
-      await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(id) });
-    } else {
-      await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge:true });
-    }
-    await cargarFavoritos();
-  } catch (e) {
-    alert('Error actualizando favorito: ' + e.message);
-  }
-}
-async function cargarFavoritos() {
-  if (!usuarioActual) { favoritos=[]; return; }
-  const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
-  favoritos = (doc.exists && doc.data().favoritos) || [];
-  mostrarRecetas();
 }
 
 // Compartir
@@ -272,9 +257,7 @@ function cerrarFormulario() {
   recetaEnEdicion = null;
 }
 
-// Inicial
-aplicarTemaGuardado();
-// Genera lista de compras
+// Lista de compras
 async function generarListaCompras() {
   if (!usuarioActual) return;
   const listaContenedor = document.getElementById('lista-compras');
@@ -316,3 +299,6 @@ async function generarListaCompras() {
   });
   listaContenedor.appendChild(ul);
 }
+
+// Inicial
+aplicarTemaGuardado();
