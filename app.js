@@ -301,3 +301,7 @@ async function generarListaCompras() {
 
 // Inicial
 aplicarTemaGuardado();
+// imprimir lo planificado
+function imprimirPlanificador() {
+  window.print();
+}
