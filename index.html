@@ -3,13 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Con Salud - Recetas Saludables</title>
+  <title>Con Salud</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="logo.svg" type="image/svg+xml" />
 </head>
 <body>
-  <div class="container">
+  <!-- Barra superior -->
+  <header class="topbar">
+    <img src="logo.svg" alt="Con Salud" class="logo">
     <h1>Con Salud</h1>
+    <button class="menu-btn" onclick="openNav()">☰</button>
+  </header>
+
+  <!-- Menú lateral -->
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+    <a href="#">Mis Recetas Agendadas</a>
+    <a href="#">Mis Favoritos</a>
+    <a href="#">Lista de Compras</a>
+    <!-- Puedes agregar más enlaces -->
+  </div>
+
+  <div class="container">
     <button id="toggle-theme">🌙 Tema Oscuro</button>
     <button id="login-btn">Iniciar Sesión</button>
     <button id="logout-btn" style="display:none">Cerrar Sesión</button>
@@ -28,7 +42,7 @@
     <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
 
     <div id="recetas"></div>
-    
+
     <button onclick="imprimirPlanificador()">🖨️ Imprimir Planificador</button>
 
     <h2>📆 Planificador Semanal</h2>
@@ -38,7 +52,7 @@
     <div id="lista-compras"></div>
   </div>
 
-  <!-- Modal agendar -->
+  <!-- Modales -->
   <div id="modal-dia" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarModalDia()">&times;</span>
@@ -54,7 +68,6 @@
     </div>
   </div>
 
-  <!-- Formulario agregar/editar receta -->
   <div id="formulario" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarFormulario()">&times;</span>
@@ -77,12 +90,19 @@
     </div>
   </div>
 
-  <!-- ✅ Scripts de Firebase en orden correcto -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+
+  <script>
+    function openNav() {
+      document.getElementById("mySidebar").style.width = "250px";
+    }
+    function closeNav() {
+      document.getElementById("mySidebar").style.width = "0";
+    }
+  </script>
 </body>
 </html>
