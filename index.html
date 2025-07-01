@@ -3,12 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App Recetas Saludables</title>
+  <title>ConSalud</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="https://raw.githubusercontent.com/compuzettaoficial/consalud/7211b16f92c60737eb68b592c7f056156ca8c85e/logo.svg" type="image/svg+xml">
 </head>
 <body>
+  <!-- Menú lateral -->
+  <div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="toggleMenu()">&times;</a>
+    <a href="#" onclick="filtrarFavoritos()">❤️ Mis Favoritos</a>
+    <a href="#" onclick="scrollToSection('planificador')">📆 Mis recetas agendadas</a>
+    <a href="#" onclick="scrollToSection('lista-compras')">🛒 Mi lista de compras</a>
+  </div>
+
+  <div class="header">
+    <span class="menu-icon" onclick="toggleMenu()">☰</span>
+    <img src="https://raw.githubusercontent.com/compuzettaoficial/consalud/7211b16f92c60737eb68b592c7f056156ca8c85e/logo.svg" alt="ConSalud" class="logo">
+    <h1>ConSalud</h1>
+  </div>
+
   <div class="container">
-    <h1>Recetas Saludables</h1>
     <button id="toggle-theme">🌙 Tema Oscuro</button>
     <button id="login-btn">Iniciar Sesión</button>
     <button id="logout-btn" style="display:none">Cerrar Sesión</button>
@@ -27,13 +41,13 @@
     <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
 
     <div id="recetas"></div>
-    
-<button onclick="imprimirPlanificador()">🖨️ Imprimir Planificador</button>
 
-    <h2>📆 Planificador Semanal</h2>
+    <button onclick="imprimirPlanificador()">🖨️ Imprimir / Descargar PDF</button>
+
+    <h2 id="planificador">📆 Planificador Semanal</h2>
     <div id="planificador"></div>
 
-    <h2>🛒 Lista de Compras</h2>
+    <h2 id="lista-compras">🛒 Lista de Compras</h2>
     <div id="lista-compras"></div>
   </div>
 
@@ -76,9 +90,6 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
 </body>

@@ -1,14 +1,14 @@
 {
-  "name": "Recetas Saludables",
+  "name": "ConSalud",
   "short_name": "Recetas",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#4CAF50",
-  "theme_color": "#4CAF50",
+  "background_color": "#6b4b9a",
+  "theme_color": "#6b4b9a",
   "icons": [
     {
-      "src": "icon.png",
-      "type": "image/png",
+      "src": "https://raw.githubusercontent.com/compuzettaoficial/consalud/7211b16f92c60737eb68b592c7f056156ca8c85e/logo.svg",
+      "type": "image/svg+xml",
       "sizes": "192x192"
     }
   ]

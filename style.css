@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  background: #e8e5f0;
   color: #333;
   margin: 0;
   padding: 0;
@@ -11,17 +11,59 @@ body.dark {
   color: #eee;
 }
 
-.container {
-  max-width: 800px;
-  margin: auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.header {
+  background: #6b4b9a;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 10px;
 }
 
-body.dark .container {
-  background: #333;
+.logo {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.menu-icon {
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 2;
+  top: 0; left: 0;
+  background-color: #6b4b9a;
+  overflow-x: hidden;
+  transition: 0.3s;
+  padding-top: 60px;
+}
+
+.sidebar a {
+  padding: 8px 16px;
+  text-decoration: none;
+  color: white;
+  display: block;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0; right: 0;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-top: 10px;
 }
 
 h1, h2 {
@@ -49,7 +91,7 @@ input, textarea, select {
 .modal {
   display: none;
   position: fixed;
-  z-index: 1;
+  z-index: 3;
   left: 0; top: 0;
   width: 100%; height: 100%;
   overflow: auto;
@@ -60,36 +102,31 @@ input, textarea, select {
   background-color: #fff;
   margin: 10% auto;
   padding: 20px;
-  border: 1px solid #888;
   width: 90%;
   max-width: 500px;
   border-radius: 12px;
 }
 
 .close {
-  color: #aaa;
   float: right;
   font-size: 28px;
-  font-weight: bold;
   cursor: pointer;
 }
 
 .card {
-  background: #e8e5f0;
+  background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 15px;
+  padding: 10px;
 }
 
-/* ✅ Modificado: imagen más discreta */
 .card img {
   width: 100%;
-  max-height: 150px;  /* antes era 200px */
+  max-height: 150px;
   object-fit: cover;
   border-radius: 8px;
 }
-/* Rejilla para recetas en 2 columnas responsivas */
+
 #recetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
