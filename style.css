@@ -89,3 +89,9 @@ input, textarea, select {
   object-fit: cover;
   border-radius: 8px;
 }
+/* Rejilla para recetas en 2 columnas responsivas */
+#recetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
