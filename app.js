@@ -210,18 +210,17 @@ async function cargarPlanificador() {
     const doc = await db.collection('usuarios').doc(usuarioActual.uid)
       .collection('planificador').doc(dia).get();
     const ids = (doc.exists && doc.data().recetas) || [];
-    if (ids && ids.length > 0) {
+    // Filtra solo recetas que existen
+    const recetasValidas = ids.map(id => recetas.find(r => r.id === id)).filter(Boolean);
+    if (recetasValidas.length > 0) {
       const div = document.createElement('div'); div.className = 'card';
       div.innerHTML = `<h4>${dia}</h4>`;
-      ids.forEach(id => {
-        const r = recetas.find(rr => rr.id === id);
-        if (r) {
-          div.innerHTML += `
-            <div style="display:flex;justify-content:space-between;">
-              <span>${r.titulo}</span>
-              <button onclick="quitarAgendado('${dia}','${id}')">❌</button>
-            </div>`;
-        }
+      recetasValidas.forEach(r => {
+        div.innerHTML += `
+          <div style="display:flex;justify-content:space-between;">
+            <span>${r.titulo}</span>
+            <button onclick="quitarAgendado('${dia}','${r.id}')">❌</button>
+          </div>`;
       });
       cont.appendChild(div);
     }
