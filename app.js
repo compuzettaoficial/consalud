@@ -235,6 +235,25 @@ async function agendarEnDias() {
     alert('Error al agendar: ' + e.message);
   }
 }
+function compartir(titulo) {
+  const url = window.location.href;
+  const texto = `Mira esta receta: ${titulo} - ${url}`;
+  if (navigator.share) {
+    // Si el navegador soporta Web Share API
+    navigator.share({
+      title: titulo,
+      text: texto,
+      url: url
+    }).catch(e => console.error('Error al compartir:', e));
+  } else {
+    // Si no soporta, copia al portapapeles
+    navigator.clipboard.writeText(texto).then(() => {
+      alert('Enlace copiado al portapapeles');
+    }).catch(e => {
+      alert('No se pudo copiar: ' + e.message);
+    });
+  }
+}
 
 // Inicial
 aplicarTemaGuardado();
