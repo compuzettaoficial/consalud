@@ -343,7 +343,7 @@ async function agendarEnDias() {
 
     await ref.set(datos);
     cerrarModalDia();
-    await cargarPlanificador();
+    await mostrarPlanificador();
   } catch (e) {
     alert('Error al agendar: ' + e.message);
   }
