@@ -206,6 +206,35 @@ function mostrarPlanificador() {
 function mostrarListaCompras() {
   generarListaCompras();
 }
+async function agendarEnDias() {
+  if (!usuarioActual) {
+    alert('Debes iniciar sesión para agendar.');
+    return;
+  }
+  const diasSeleccionados = Array.from(document.querySelectorAll('#modal-dia input[type="checkbox"]:checked'))
+    .map(cb => cb.value);
+  if (diasSeleccionados.length === 0) {
+    alert('Selecciona al menos un día.');
+    return;
+  }
+
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    let datos = doc.exists ? doc.data() : {};
+
+    diasSeleccionados.forEach(dia => {
+      if (!datos[dia]) datos[dia] = [];
+      if (!datos[dia].includes(recetaAAgendar)) datos[dia].push(recetaAAgendar);
+    });
+
+    await ref.set(datos);
+    cerrarModalDia();
+    await cargarPlanificador();
+  } catch (e) {
+    alert('Error al agendar: ' + e.message);
+  }
+}
 
 // Inicial
 aplicarTemaGuardado();
