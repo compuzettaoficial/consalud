@@ -8,32 +8,22 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!-- Barra superior -->
+  <!-- Barra superior fija -->
   <div class="topbar">
-    <span class="menu-icon" onclick="openNav()">☰</span>
-    <img src="img/logo.png" alt="Con Salud" class="logo">
-    <div class="menu-buttons" id="menu-buttons">
-      <button onclick="mostrarRecetas()">Inicio</button>
-      <button id="login-btn">Iniciar Sesión</button>
-      <button id="logout-btn" style="display:none">Cerrar Sesión</button>
-    </div>
-    <span id="user-name" class="user-name"></span>
+    <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
+    <span id="menu-recetas" class="menu-item">Recetas</span>
+    <span id="menu-favoritos" class="menu-item logged-only">Favoritos</span>
+    <span id="menu-plan" class="menu-item logged-only">Plan Semanal</span>
+    <span id="menu-lista" class="menu-item logged-only">Lista de Productos</span>
+    <button id="login-btn">Iniciar Sesión</button>
+    <button id="logout-btn" style="display:none">Cerrar Sesión</button>
     <button id="toggle-theme">🌙</button>
   </div>
 
-  <!-- Sidebar -->
-  <div id="mySidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="#" onclick="mostrarFavoritos()">❤️ Favoritos</a>
-    <a href="#" onclick="mostrarPlanificador()">📅 Planificador</a>
-    <a href="#" onclick="mostrarListaCompras()">🛒 Lista de Compras</a>
-  </div>
-  <div class="overlay" id="overlay" onclick="closeNav()"></div>
-
+  <!-- Contenido principal -->
   <div class="container">
     <h1>Recetas Saludables</h1>
-    <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
-
+    <p id="saludo" style="margin:5px 0;"></p>
     <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()">
     <select id="filtroCategoria" onchange="mostrarRecetas()">
       <option value="">Todas</option>
@@ -45,13 +35,14 @@
       <option value="Veganas">Veganas</option>
     </select>
     <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
+    <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
 
     <div id="recetas"></div>
 
     <h2>📆 Planificador Semanal</h2>
     <div id="planificador"></div>
 
-    <h2>🛒 Lista de Compras</h2>
+    <h2>🛒 Lista de Productos</h2>
     <div id="lista-compras"></div>
   </div>
 
@@ -92,6 +83,14 @@
       </select>
       <button onclick="guardarReceta()">Guardar</button>
     </div>
+  </div>
+
+  <!-- Barra inferior para móvil -->
+  <div class="bottom-bar">
+    <span onclick="mostrarRecetas()">🏠</span>
+    <span onclick="mostrarFavoritos()">❤️</span>
+    <span onclick="mostrarPlanificador()">📅</span>
+    <span onclick="mostrarListaCompras()">🛒</span>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
