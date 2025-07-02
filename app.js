@@ -113,7 +113,7 @@ function editarReceta(id) {
   mostrarFormulario();
 }
 
-// Mostrar recetas (MODIFICADO para mostrar ingredientes y preparación)
+// Mostrar recetas
 function mostrarRecetas() {
   const cont = document.getElementById('recetas'); cont.innerHTML = '';
   const txt = document.getElementById('busqueda').value.toLowerCase();
@@ -192,129 +192,6 @@ function cerrarModalDia() {
   recetaAAgendar = null;
   document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
-
-// Botones globales
-function mostrarFavoritos() {
-  document.getElementById('verFavoritos').checked = true;
-  mostrarRecetas();
-}
-function mostrarTodasRecetas() {
-  document.getElementById('verFavoritos').checked = false;
-  mostrarRecetas();
-}
-function mostrarPlanificador() {
-  cargarPlanificador();
-}
-function mostrarListaCompras() {
-  generarListaCompras();
-}
-
-// AGENDAR EN DIAS
-async function agendarEnDias() {
-  if (!usuarioActual) {
-    alert('Debes iniciar sesión para agendar.');
-    return;
-  }
-  const diasSeleccionados = Array.from(document.querySelectorAll('#modal-dia input[type="checkbox"]:checked'))
-    .map(cb => cb.value);
-  if (diasSeleccionados.length === 0) {
-    alert('Selecciona al menos un día.');
-    return;
-  }
-
-  try {
-    const ref = db.collection('planificadores').doc(usuarioActual.uid);
-    const doc = await ref.get();
-    let datos = doc.exists ? doc.data() : {};
-
-    diasSeleccionados.forEach(dia => {
-      if (!datos[dia]) datos[dia] = [];
-      if (!datos[dia].includes(recetaAAgendar)) datos[dia].push(recetaAAgendar);
-    });
-
-    await ref.set(datos);
-    cerrarModalDia();
-    await cargarPlanificador();
-  } catch (e) {
-    alert('Error al agendar: ' + e.message);
-  }
-}
-
-// COMPARTIR
-function compartir(titulo) {
-  const url = window.location.href;
-  const texto = `Mira esta receta: ${titulo} - ${url}`;
-  if (navigator.share) {
-    navigator.share({
-      title: titulo,
-      text: texto,
-      url: url
-    }).catch(e => console.error('Error al compartir:', e));
-  } else {
-    navigator.clipboard.writeText(texto).then(() => {
-      alert('Enlace copiado al portapapeles');
-    }).catch(e => {
-      alert('No se pudo copiar: ' + e.message);
-    });
-  }
-}
-
-// NUEVO: cargarPlanificador mostrando categoría + botón quitar
-async function cargarPlanificador() {
-  if (!usuarioActual) {
-    document.getElementById('planificador').innerHTML = '<p>Inicia sesión para ver tu planificador.</p>';
-    return;
-  }
-  try {
-    const ref = db.collection('planificadores').doc(usuarioActual.uid);
-    const doc = await ref.get();
-    const datos = doc.exists ? doc.data() : {};
-    let html = '';
-
-    ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].forEach(dia => {
-      html += `<h4>${dia}</h4>`;
-      const ids = datos[dia] || [];
-      if (ids.length === 0) {
-        html += '<p>- Sin recetas -</p>';
-      } else {
-        ids.forEach(id => {
-          const r = recetas.find(rec => rec.id === id);
-          if (r) {
-            html += `<p>${r.categoria} - ${r.titulo} 
-              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
-          } else {
-            html += `<p>(Receta eliminada)
-              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
-          }
-        });
-      }
-    });
-    document.getElementById('planificador').innerHTML = html;
-  } catch (e) {
-    console.error('Error cargando planificador:', e);
-    document.getElementById('planificador').innerHTML = '<p>Error al cargar el planificador.</p>';
-  }
-}
-
-// NUEVO: quitar receta de un día
-async function quitarDeDia(dia, id) {
-  if (!usuarioActual) return;
-  try {
-    const ref = db.collection('planificadores').doc(usuarioActual.uid);
-    const doc = await ref.get();
-    if (doc.exists) {
-      const datos = doc.data();
-      if (datos[dia]) {
-        datos[dia] = datos[dia].filter(rid => rid !== id);
-        await ref.set(datos);
-        await cargarPlanificador();
-      }
-    }
-  } catch (e) {
-    alert('Error al quitar receta: ' + e.message);
-  }
-}
-// ... tu código original arriba sin cambios
 
 // NUEVO: mostrar planificador en modal
 async function mostrarPlanificador() {
@@ -441,7 +318,55 @@ function cerrarModalLista() {
   document.getElementById('modal-lista').style.display = 'none';
 }
 
-// ... tu código original abajo sin cambios
+// AGENDAR EN DIAS
+async function agendarEnDias() {
+  if (!usuarioActual) {
+    alert('Debes iniciar sesión para agendar.');
+    return;
+  }
+  const diasSeleccionados = Array.from(document.querySelectorAll('#modal-dia input[type="checkbox"]:checked'))
+    .map(cb => cb.value);
+  if (diasSeleccionados.length === 0) {
+    alert('Selecciona al menos un día.');
+    return;
+  }
+
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    let datos = doc.exists ? doc.data() : {};
+
+    diasSeleccionados.forEach(dia => {
+      if (!datos[dia]) datos[dia] = [];
+      if (!datos[dia].includes(recetaAAgendar)) datos[dia].push(recetaAAgendar);
+    });
+
+    await ref.set(datos);
+    cerrarModalDia();
+    await cargarPlanificador();
+  } catch (e) {
+    alert('Error al agendar: ' + e.message);
+  }
+}
+
+// COMPARTIR
+function compartir(titulo) {
+  const url = window.location.href;
+  const texto = `Mira esta receta: ${titulo} - ${url}`;
+  if (navigator.share) {
+    navigator.share({
+      title: titulo,
+      text: texto,
+      url: url
+    }).catch(e => console.error('Error al compartir:', e));
+  } else {
+    navigator.clipboard.writeText(texto).then(() => {
+      alert('Enlace copiado al portapapeles');
+    }).catch(e => {
+      alert('No se pudo copiar: ' + e.message);
+    });
+  }
+}
 
 // Inicial
 aplicarTemaGuardado();
