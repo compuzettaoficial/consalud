@@ -85,6 +85,10 @@ body.dark .card {
   width: 90%;
   max-width: 500px;
   border-radius: 12px;
+
+  /* NUEVO: permitir scroll si el contenido es largo */
+  max-height: 80vh;
+  overflow-y: auto;
 }
 body.dark .modal-content { background: #333; color: #eee; }
 
