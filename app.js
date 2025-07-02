@@ -39,6 +39,10 @@ auth.onAuthStateChanged(async user => {
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
+  document.getElementById('favoritos-btn').style.display = user ? '' : 'none';
+  document.getElementById('plan-btn').style.display = user ? '' : 'none';
+  document.getElementById('lista-btn').style.display = user ? '' : 'none';
+  document.getElementById('user-name').innerText = user ? `👋 Hola, ${user.displayName}` : '';
   await cargarRecetas();
   await cargarFavoritos();
   await cargarPlanificador();
@@ -326,3 +330,4 @@ function mostrarListaCompras() {
 
 // Inicial
 aplicarTemaGuardado();
+cargarRecetas(); // Cargar recetas incluso sin login
