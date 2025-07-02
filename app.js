@@ -39,11 +39,15 @@ auth.onAuthStateChanged(async user => {
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
-  if (user) {
+ }
+   if (user) {
+      document.getElementById('saludo').innerText = `Hola, ${user.displayName || user.email}`;
     await cargarFavoritos();
     await cargarPlanificador();
     await generarListaCompras();
-  } else {
+  }
+   else {
+      document.getElementById('saludo').innerText = '';
     favoritos = [];
   }
   await cargarRecetas();
@@ -366,6 +370,10 @@ function compartir(titulo) {
       alert('No se pudo copiar: ' + e.message);
     });
   }
+}
+function mostrarFavoritos() {
+  document.getElementById('verFavoritos').checked = true;
+  mostrarRecetas();
 }
 
 // Inicial
