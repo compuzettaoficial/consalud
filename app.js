@@ -39,17 +39,17 @@ auth.onAuthStateChanged(async user => {
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
- }
-   if (user) {
-      document.getElementById('saludo').innerText = `Hola, ${user.displayName || user.email}`;
+
+  if (user) {
+    document.getElementById('saludo').innerText = `Hola, ${user.displayName || user.email}`;
     await cargarFavoritos();
     await cargarPlanificador();
     await generarListaCompras();
-  }
-   else {
-      document.getElementById('saludo').innerText = '';
+  } else {
+    document.getElementById('saludo').innerText = '';
     favoritos = [];
   }
+
   await cargarRecetas();
 });
 
