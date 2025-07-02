@@ -8,7 +8,6 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!-- Barra superior -->
   <div class="topbar">
     <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
     <button onclick="mostrarTodasRecetas()">Recetas</button>
@@ -17,7 +16,6 @@
     <button id="toggle-theme">🌙</button>
   </div>
 
-  <!-- Contenedor principal -->
   <div class="container">
     <h1>Recetas Saludables</h1>
     <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
@@ -43,7 +41,6 @@
     <div id="lista-compras"></div>
   </div>
 
-  <!-- Modal agendar -->
   <div id="modal-dia" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarModalDia()">&times;</span>
@@ -59,7 +56,6 @@
     </div>
   </div>
 
-  <!-- Modal agregar/editar receta -->
   <div id="formulario" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarFormulario()">&times;</span>
@@ -82,7 +78,6 @@
     </div>
   </div>
 
-  <!-- Barra inferior móvil -->
   <div class="bottom-bar">
     <button onclick="mostrarTodasRecetas()">🏠</button>
     <button onclick="mostrarFavoritos()">❤️</button>
