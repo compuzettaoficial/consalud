@@ -206,6 +206,8 @@ function mostrarPlanificador() {
 function mostrarListaCompras() {
   generarListaCompras();
 }
+
+// AGENDAR EN DIAS
 async function agendarEnDias() {
   if (!usuarioActual) {
     alert('Debes iniciar sesión para agendar.');
@@ -235,23 +237,54 @@ async function agendarEnDias() {
     alert('Error al agendar: ' + e.message);
   }
 }
+
+// COMPARTIR
 function compartir(titulo) {
   const url = window.location.href;
   const texto = `Mira esta receta: ${titulo} - ${url}`;
   if (navigator.share) {
-    // Si el navegador soporta Web Share API
     navigator.share({
       title: titulo,
       text: texto,
       url: url
     }).catch(e => console.error('Error al compartir:', e));
   } else {
-    // Si no soporta, copia al portapapeles
     navigator.clipboard.writeText(texto).then(() => {
       alert('Enlace copiado al portapapeles');
     }).catch(e => {
       alert('No se pudo copiar: ' + e.message);
     });
+  }
+}
+
+// NUEVA: CARGAR PLANIFICADOR
+async function cargarPlanificador() {
+  if (!usuarioActual) {
+    document.getElementById('planificador').innerHTML = '<p>Inicia sesión para ver tu planificador.</p>';
+    return;
+  }
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    const datos = doc.exists ? doc.data() : {};
+    let html = '';
+
+    ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].forEach(dia => {
+      html += `<h4>${dia}</h4>`;
+      const ids = datos[dia] || [];
+      if (ids.length === 0) {
+        html += '<p>- Sin recetas -</p>';
+      } else {
+        ids.forEach(id => {
+          const r = recetas.find(rec => rec.id === id);
+          html += `<p>${r ? r.titulo : '(Receta eliminada)'}</p>`;
+        });
+      }
+    });
+    document.getElementById('planificador').innerHTML = html;
+  } catch (e) {
+    console.error('Error cargando planificador:', e);
+    document.getElementById('planificador').innerHTML = '<p>Error al cargar el planificador.</p>';
   }
 }
 
