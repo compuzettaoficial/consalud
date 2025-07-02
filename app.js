@@ -36,13 +36,19 @@ document.getElementById('logout-btn').addEventListener('click', () => auth.signO
 auth.onAuthStateChanged(async user => {
   usuarioActual = user;
   esAdmin = user && user.email === adminEmail;
+
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
-  document.getElementById('favoritos-btn').style.display = user ? '' : 'none';
-  document.getElementById('plan-btn').style.display = user ? '' : 'none';
-  document.getElementById('lista-btn').style.display = user ? '' : 'none';
-  document.getElementById('user-name').innerText = user ? `👋 Hola, ${user.displayName}` : '';
+
+  const userName = document.getElementById('user-name');
+  if (user && user.displayName) {
+    userName.textContent = `Hola, ${user.displayName}`;
+    userName.style.display = '';
+  } else {
+    userName.style.display = 'none';
+  }
+
   await cargarRecetas();
   await cargarFavoritos();
   await cargarPlanificador();
@@ -54,6 +60,7 @@ async function cargarRecetas() {
   try {
     const snap = await db.collection('recetas').get();
     recetas = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log("Recetas cargadas:", recetas);
     mostrarRecetas();
   } catch (e) {
     console.error('Error cargando recetas:', e);
@@ -115,10 +122,19 @@ function editarReceta(id) {
 
 // Mostrar recetas
 function mostrarRecetas() {
-  const cont = document.getElementById('recetas'); cont.innerHTML = '';
-  const txt = document.getElementById('busqueda').value.toLowerCase();
-  const cat = document.getElementById('filtroCategoria').value;
-  const verFav = document.getElementById('verFavoritos').checked;
+  const cont = document.getElementById('recetas'); 
+  if (!cont) {
+    console.error("No se encontró el contenedor de recetas");
+    return;
+  }
+  cont.innerHTML = '';
+
+  const busquedaInput = document.getElementById('busqueda');
+  const txt = busquedaInput ? busquedaInput.value.toLowerCase() : '';
+  const filtroCategoria = document.getElementById('filtroCategoria');
+  const cat = filtroCategoria ? filtroCategoria.value : '';
+  const verFavoritosCheckbox = document.getElementById('verFavoritos');
+  const verFav = verFavoritosCheckbox ? verFavoritosCheckbox.checked : false;
 
   let filtradas = recetas.filter(r =>
     (!txt || r.titulo.toLowerCase().includes(txt) || r.ingredientes.toLowerCase().includes(txt)) &&
@@ -329,5 +345,7 @@ function mostrarListaCompras() {
 }
 
 // Inicial
-aplicarTemaGuardado();
-cargarRecetas(); // Cargar recetas incluso sin login
+document.addEventListener('DOMContentLoaded', () => {
+  aplicarTemaGuardado();
+  cargarRecetas();
+});
