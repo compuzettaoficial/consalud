@@ -11,13 +11,13 @@ document.getElementById('toggle-theme').addEventListener('click', () => {
   document.body.classList.toggle('dark');
   const isDark = document.body.classList.contains('dark');
   localStorage.setItem('tema', isDark ? 'oscuro' : 'claro');
-  document.getElementById('toggle-theme').innerText = isDark ? '☀️ Tema Claro' : '🌙 Tema Oscuro';
+  document.getElementById('toggle-theme').innerText = isDark ? '☀️' : '🌙';
 });
 function aplicarTemaGuardado() {
   const tema = localStorage.getItem('tema');
   if (tema === 'oscuro') {
     document.body.classList.add('dark');
-    document.getElementById('toggle-theme').innerText = '☀️ Tema Claro';
+    document.getElementById('toggle-theme').innerText = '☀️';
   }
 }
 
@@ -71,7 +71,8 @@ async function guardarReceta() {
 
   try {
     if (recetaEnEdicion) {
-      await db.collection('recetas').doc(recetaEnEdicion).update({ titulo, ingredientes, tiempo, imagen, preparacion, categoria });
+      await db.collection('recetas').doc(recetaEnEdicion)
+        .update({ titulo, ingredientes, tiempo, imagen, preparacion, categoria });
     } else {
       await db.collection('recetas').add({ titulo, ingredientes, tiempo, imagen, preparacion, categoria });
     }
@@ -139,10 +140,8 @@ function mostrarRecetas() {
         <button onclick="compartir('${r.titulo}')">🔗 Compartir</button>
         ${esAdmin ? `
           <button onclick="editarReceta('${r.id}')">✏️ Editar</button>
-          <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>` : ''}
-      ` : `
-        <button onclick="alert('Inicia sesión para marcar favorito')">🤍 Marcar favorito</button>
-      `}
+          <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>` : '' }
+      ` : '' }
     `;
     cont.appendChild(c);
   });
@@ -159,7 +158,7 @@ async function toggleFavorito(id) {
     if (esFav) {
       await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(id) });
     } else {
-      await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge:true });
+      await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge: true });
     }
     await cargarFavoritos();
   } catch (e) {
@@ -193,7 +192,7 @@ async function agendarEnDias() {
     for (const cb of checks) {
       await db.collection('usuarios').doc(usuarioActual.uid)
         .collection('planificador').doc(cb.value)
-        .set({ recetas: firebase.firestore.FieldValue.arrayUnion(recetaAAgendar) }, { merge:true });
+        .set({ recetas: firebase.firestore.FieldValue.arrayUnion(recetaAAgendar) }, { merge: true });
     }
     cerrarModalDia();
     await cargarPlanificador();
@@ -206,8 +205,7 @@ async function agendarEnDias() {
 // Planificador
 async function cargarPlanificador() {
   if (!usuarioActual) return;
-  const cont = document.getElementById('planificador'); 
-  cont.innerHTML = '';
+  const cont = document.getElementById('planificador'); cont.innerHTML = '';
   const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   for (const dia of dias) {
     const doc = await db.collection('usuarios').doc(usuarioActual.uid)
@@ -219,8 +217,8 @@ async function cargarPlanificador() {
       div.innerHTML = `<h4>${dia}</h4>`;
       recetasValidas.forEach(r => {
         div.innerHTML += `
-          <div style="display:flex;justify-content:space-between;">
-            <span>${r.titulo}</span>
+          <div class="plan-item">
+            <span>${r.categoria}: ${r.titulo}</span>
             <button onclick="quitarAgendado('${dia}','${r.id}')">❌</button>
           </div>`;
       });
@@ -245,8 +243,8 @@ async function quitarAgendado(dia, id) {
 // Compartir
 function compartir(titulo) {
   navigator.clipboard.writeText(location.href + '?q=' + encodeURIComponent(titulo))
-    .then(()=>alert('Enlace copiado'))
-    .catch(()=>alert('Error copiando'));
+    .then(() => alert('Enlace copiado'))
+    .catch(() => alert('Error copiando'));
 }
 
 // Formularios
@@ -301,25 +299,29 @@ async function generarListaCompras() {
   listaContenedor.appendChild(ul);
 }
 
-// imprimir lo planificado
-function imprimirPlanificador() {
-  window.print();
+// Sidebar
+function openNav() {
+  document.getElementById("mySidebar").style.width = "250px";
+  document.getElementById("overlay").style.display = "block";
+}
+function closeNav() {
+  document.getElementById("mySidebar").style.width = "0";
+  document.getElementById("overlay").style.display = "none";
 }
 
-// Funciones extra para menú
-function toggleMenu() {
-  const sidebar = document.getElementById('sidebar');
-  sidebar.style.width = sidebar.style.width === '250px' ? '0' : '250px';
-}
-function filtrarFavoritos() {
+// Mostrar secciones
+function mostrarFavoritos() {
   document.getElementById('verFavoritos').checked = true;
   mostrarRecetas();
+  closeNav();
 }
-function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+function mostrarPlanificador() {
+  cargarPlanificador();
+  closeNav();
 }
-function cerrarSesionDesdeMenu() {
-  if (usuarioActual) auth.signOut();
+function mostrarListaCompras() {
+  generarListaCompras();
+  closeNav();
 }
 
 // Inicial
