@@ -8,22 +8,20 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!-- Barra superior fija -->
+  <!-- Barra superior -->
   <div class="topbar">
     <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
-    <span id="menu-recetas" class="menu-item">Recetas</span>
-    <span id="menu-favoritos" class="menu-item logged-only">Favoritos</span>
-    <span id="menu-plan" class="menu-item logged-only">Plan Semanal</span>
-    <span id="menu-lista" class="menu-item logged-only">Lista de Productos</span>
+    <button onclick="mostrarTodasRecetas()">Recetas</button>
     <button id="login-btn">Iniciar Sesión</button>
     <button id="logout-btn" style="display:none">Cerrar Sesión</button>
     <button id="toggle-theme">🌙</button>
   </div>
 
-  <!-- Contenido principal -->
+  <!-- Contenedor principal -->
   <div class="container">
     <h1>Recetas Saludables</h1>
-    <p id="saludo" style="margin:5px 0;"></p>
+    <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
+
     <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()">
     <select id="filtroCategoria" onchange="mostrarRecetas()">
       <option value="">Todas</option>
@@ -35,14 +33,13 @@
       <option value="Veganas">Veganas</option>
     </select>
     <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
-    <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
 
     <div id="recetas"></div>
 
     <h2>📆 Planificador Semanal</h2>
     <div id="planificador"></div>
 
-    <h2>🛒 Lista de Productos</h2>
+    <h2>🛒 Lista de Compras</h2>
     <div id="lista-compras"></div>
   </div>
 
@@ -62,7 +59,7 @@
     </div>
   </div>
 
-  <!-- Formulario agregar/editar receta -->
+  <!-- Modal agregar/editar receta -->
   <div id="formulario" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarFormulario()">&times;</span>
@@ -85,12 +82,12 @@
     </div>
   </div>
 
-  <!-- Barra inferior para móvil -->
+  <!-- Barra inferior móvil -->
   <div class="bottom-bar">
-    <span onclick="mostrarRecetas()">🏠</span>
-    <span onclick="mostrarFavoritos()">❤️</span>
-    <span onclick="mostrarPlanificador()">📅</span>
-    <span onclick="mostrarListaCompras()">🛒</span>
+    <button onclick="mostrarTodasRecetas()">🏠</button>
+    <button onclick="mostrarFavoritos()">❤️</button>
+    <button onclick="mostrarPlanificador()">📅</button>
+    <button onclick="mostrarListaCompras()">🛒</button>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
