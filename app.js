@@ -113,7 +113,7 @@ function editarReceta(id) {
   mostrarFormulario();
 }
 
-// Mostrar recetas
+// Mostrar recetas (MODIFICADO para mostrar ingredientes y preparación)
 function mostrarRecetas() {
   const cont = document.getElementById('recetas'); cont.innerHTML = '';
   const txt = document.getElementById('busqueda').value.toLowerCase();
@@ -132,6 +132,8 @@ function mostrarRecetas() {
     c.innerHTML = `
       <img src="${r.imagen || 'https://via.placeholder.com/150'}" alt="">
       <h3>${r.titulo}</h3>
+      <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
+      <p><strong>Preparación:</strong> ${r.preparacion}</p>
       <p>⏱ ${r.tiempo}</p>
       <button onclick="toggleFavorito('${r.id}')">
         ${favoritos.includes(r.id) ? '❤️ Quitar' : '🤍 Favorito'}
