@@ -11,9 +11,9 @@
 <body>
   <div class="topbar">
     <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
-    <button onclick="mostrarTodasRecetas()">Recetas</button>
+    <span id="saludo" style="margin-left:10px;"></span>
     <button id="login-btn">Iniciar Sesión</button>
-    <button id="logout-btn" style="display:none">Cerrar Sesión</button>
+    <button id="logout-btn" style="display:none; margin-left:auto;">Cerrar Sesión</button>
     <button id="toggle-theme">🌙</button>
   </div>
 
@@ -36,7 +36,7 @@
     <div id="recetas"></div>
   </div>
 
-  <!-- MODAL: seleccionar días para agendar -->
+  <!-- MODALES (igual que antes) -->
   <div id="modal-dia" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarModalDia()">&times;</span>
@@ -52,7 +52,6 @@
     </div>
   </div>
 
-  <!-- MODAL: formulario agregar/editar receta -->
   <div id="formulario" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarFormulario()">&times;</span>
@@ -75,7 +74,6 @@
     </div>
   </div>
 
-  <!-- MODAL: planificador semanal -->
   <div id="modal-planificador" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarModalPlanificador()">&times;</span>
@@ -84,7 +82,6 @@
     </div>
   </div>
 
-  <!-- MODAL: lista de compras -->
   <div id="modal-lista" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarModalLista()">&times;</span>
@@ -96,12 +93,11 @@
   <!-- Barra inferior -->
   <div class="bottom-bar">
     <button onclick="mostrarTodasRecetas()">🏠</button>
-    <button onclick="mostrarFavoritos()">❤️</button>
+    <button onclick="mostrarFavoritos()">🤍</button>
     <button onclick="mostrarPlanificador()">📅</button>
     <button onclick="mostrarListaCompras()">🛒</button>
   </div>
 
-  <!-- Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
