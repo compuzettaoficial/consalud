@@ -1,3 +1,4 @@
+// Estado global
 let recetas = [];
 let planificador = {};
 let recetaAAgendar = null;
@@ -36,37 +37,36 @@ document.getElementById('logout-btn').addEventListener('click', () => auth.signO
 auth.onAuthStateChanged(async user => {
   usuarioActual = user;
   esAdmin = user && user.email === adminEmail;
-
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
+  document.getElementById('user-name').innerText = user ? `Hola, ${user.displayName}` : '';
 
-  const userName = document.getElementById('user-name');
-  if (user && user.displayName) {
-    userName.textContent = `Hola, ${user.displayName}`;
-    userName.style.display = '';
+  if (user) {
+    await cargarRecetas();
+    await cargarFavoritos();
+    await cargarPlanificador();
+    await generarListaCompras();
   } else {
-    userName.style.display = 'none';
+    recetas = [];
+    favoritos = [];
+    planificador = {};
+    mostrarRecetas();
   }
-
-  await cargarRecetas();
-  await cargarFavoritos();
-  await cargarPlanificador();
-  await generarListaCompras();
 });
 
-// CRUD Recetas
+// Cargar recetas
 async function cargarRecetas() {
   try {
     const snap = await db.collection('recetas').get();
     recetas = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log("Recetas cargadas:", recetas);
     mostrarRecetas();
   } catch (e) {
     console.error('Error cargando recetas:', e);
   }
 }
 
+// Guardar receta
 async function guardarReceta() {
   const titulo = document.getElementById('titulo').value.trim();
   const ingredientes = document.getElementById('ingredientes').value.trim();
@@ -94,18 +94,7 @@ async function guardarReceta() {
   }
 }
 
-async function eliminarReceta(id) {
-  if (!confirm('¿Eliminar receta?')) return;
-  try {
-    await db.collection('recetas').doc(id).delete();
-    await cargarRecetas();
-    await cargarPlanificador();
-    await generarListaCompras();
-  } catch (e) {
-    alert('Error eliminando receta: ' + e.message);
-  }
-}
-
+// Editar receta
 function editarReceta(id) {
   const r = recetas.find(r => r.id === id);
   if (!r) return;
@@ -120,21 +109,25 @@ function editarReceta(id) {
   mostrarFormulario();
 }
 
+// Eliminar receta
+async function eliminarReceta(id) {
+  if (!confirm('¿Eliminar receta?')) return;
+  try {
+    await db.collection('recetas').doc(id).delete();
+    await cargarRecetas();
+    await cargarPlanificador();
+    await generarListaCompras();
+  } catch (e) {
+    alert('Error eliminando receta: ' + e.message);
+  }
+}
+
 // Mostrar recetas
 function mostrarRecetas() {
-  const cont = document.getElementById('recetas'); 
-  if (!cont) {
-    console.error("No se encontró el contenedor de recetas");
-    return;
-  }
-  cont.innerHTML = '';
-
-  const busquedaInput = document.getElementById('busqueda');
-  const txt = busquedaInput ? busquedaInput.value.toLowerCase() : '';
-  const filtroCategoria = document.getElementById('filtroCategoria');
-  const cat = filtroCategoria ? filtroCategoria.value : '';
-  const verFavoritosCheckbox = document.getElementById('verFavoritos');
-  const verFav = verFavoritosCheckbox ? verFavoritosCheckbox.checked : false;
+  const cont = document.getElementById('recetas'); cont.innerHTML = '';
+  const txt = document.getElementById('busqueda').value.toLowerCase();
+  const cat = document.getElementById('filtroCategoria').value;
+  const verFav = document.getElementById('verFavoritos').checked;
 
   let filtradas = recetas.filter(r =>
     (!txt || r.titulo.toLowerCase().includes(txt) || r.ingredientes.toLowerCase().includes(txt)) &&
@@ -142,7 +135,11 @@ function mostrarRecetas() {
   );
   if (verFav) filtradas = filtradas.filter(r => favoritos.includes(r.id));
 
-  if (filtradas.length === 0) cont.innerHTML = '<p>No se encontraron recetas.</p>';
+  if (filtradas.length === 0) {
+    cont.innerHTML = '<p>No se encontraron recetas.</p>';
+    return;
+  }
+
   filtradas.forEach(r => {
     const c = document.createElement('div'); c.className = 'card';
     c.innerHTML = `
@@ -160,8 +157,8 @@ function mostrarRecetas() {
         <button onclick="compartir('${r.titulo}')">🔗 Compartir</button>
         ${esAdmin ? `
           <button onclick="editarReceta('${r.id}')">✏️ Editar</button>
-          <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>` : '' }
-      ` : '' }
+          <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>` : ''}
+      ` : ''}
     `;
     cont.appendChild(c);
   });
@@ -173,9 +170,8 @@ async function toggleFavorito(id) {
   const ref = db.collection('usuarios').doc(usuarioActual.uid);
   const doc = await ref.get();
   let favs = (doc.exists && doc.data().favoritos) || [];
-  const esFav = favs.includes(id);
   try {
-    if (esFav) {
+    if (favs.includes(id)) {
       await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(id) });
     } else {
       await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge: true });
@@ -185,9 +181,8 @@ async function toggleFavorito(id) {
     alert('Error actualizando favorito: ' + e.message);
   }
 }
-
 async function cargarFavoritos() {
-  if (!usuarioActual) { favoritos=[]; return; }
+  if (!usuarioActual) { favoritos = []; return; }
   const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
   favoritos = (doc.exists && doc.data().favoritos) || [];
   mostrarRecetas();
@@ -203,7 +198,6 @@ function cerrarModalDia() {
   recetaAAgendar = null;
   document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
-
 async function agendarEnDias() {
   if (!usuarioActual) return alert('Inicia sesión primero');
   const checks = [...document.querySelectorAll('#modal-dia input[type="checkbox"]:checked')];
@@ -246,7 +240,6 @@ async function cargarPlanificador() {
     }
   }
 }
-
 async function quitarAgendado(dia, id) {
   if (!usuarioActual) return;
   try {
@@ -279,54 +272,44 @@ function cerrarFormulario() {
 // Lista de compras
 async function generarListaCompras() {
   if (!usuarioActual) return;
-  const listaContenedor = document.getElementById('lista-compras');
-  listaContenedor.innerHTML = '';
-  let todosIngredientes = [];
+  const cont = document.getElementById('lista-compras'); cont.innerHTML = '';
+  let ingredientes = [];
   const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   for (const dia of dias) {
     const doc = await db.collection('usuarios').doc(usuarioActual.uid)
       .collection('planificador').doc(dia).get();
     const ids = (doc.exists && doc.data().recetas) || [];
     ids.forEach(id => {
-      const receta = recetas.find(r => r.id === id);
-      if (receta) {
-        todosIngredientes.push(...receta.ingredientes.split(',').map(i => i.trim()));
-      }
+      const r = recetas.find(r => r.id === id);
+      if (r) ingredientes.push(...r.ingredientes.split(',').map(i => i.trim()));
     });
   }
-  if (todosIngredientes.length === 0) {
-    listaContenedor.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
+  if (ingredientes.length === 0) {
+    cont.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
     return;
   }
   const resumen = {};
-  todosIngredientes.forEach(item => {
-    const match = item.match(/^(\d+)\s+(.*)/);
-    if (match) {
-      const cantidad = parseInt(match[1]);
-      const nombre = match[2].toLowerCase();
-      resumen[nombre] = (resumen[nombre] || 0) + cantidad;
-    } else {
-      const nombre = item.toLowerCase();
-      if (!(nombre in resumen)) resumen[nombre] = '-';
-    }
+  ingredientes.forEach(item => {
+    const nombre = item.toLowerCase();
+    resumen[nombre] = (resumen[nombre] || 0) + 1;
   });
   const ul = document.createElement('ul');
   Object.entries(resumen).forEach(([nombre, cantidad]) => {
     const li = document.createElement('li');
-    li.textContent = cantidad === '-' ? nombre : `${cantidad} ${nombre}`;
+    li.textContent = `${cantidad} x ${nombre}`;
     ul.appendChild(li);
   });
-  listaContenedor.appendChild(ul);
+  cont.appendChild(ul);
 }
 
 // Sidebar
 function openNav() {
-  document.getElementById("mySidebar").style.width = "250px";
-  document.getElementById("overlay").style.display = "block";
+  document.getElementById('mySidebar').style.width = '250px';
+  document.getElementById('overlay').style.display = 'block';
 }
 function closeNav() {
-  document.getElementById("mySidebar").style.width = "0";
-  document.getElementById("overlay").style.display = "none";
+  document.getElementById('mySidebar').style.width = '0';
+  document.getElementById('overlay').style.display = 'none';
 }
 
 // Mostrar secciones
@@ -345,7 +328,4 @@ function mostrarListaCompras() {
 }
 
 // Inicial
-document.addEventListener('DOMContentLoaded', () => {
-  aplicarTemaGuardado();
-  cargarRecetas();
-});
+aplicarTemaGuardado();
