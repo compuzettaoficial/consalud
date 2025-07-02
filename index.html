@@ -33,14 +33,9 @@
     <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
 
     <div id="recetas"></div>
-
-    <h2>📆 Planificador Semanal</h2>
-    <div id="planificador"></div>
-
-    <h2>🛒 Lista de Compras</h2>
-    <div id="lista-compras"></div>
   </div>
 
+  <!-- MODALES -->
   <div id="modal-dia" class="modal">
     <div class="modal-content">
       <span class="close" onclick="cerrarModalDia()">&times;</span>
@@ -75,6 +70,23 @@
         <option value="Veganas">Veganas</option>
       </select>
       <button onclick="guardarReceta()">Guardar</button>
+    </div>
+  </div>
+
+  <!-- NUEVOS MODALES -->
+  <div id="modal-planificador" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModalPlanificador()">&times;</span>
+      <h3>📆 Planificador Semanal</h3>
+      <div id="modal-planificador-content"></div>
+    </div>
+  </div>
+
+  <div id="modal-lista" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModalLista()">&times;</span>
+      <h3>🛒 Lista de Compras</h3>
+      <div id="modal-lista-content"></div>
     </div>
   </div>
 
