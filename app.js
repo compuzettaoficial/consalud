@@ -1,4 +1,3 @@
-// Estado global
 let recetas = [];
 let planificador = {};
 let recetaAAgendar = null;
@@ -37,25 +36,21 @@ document.getElementById('logout-btn').addEventListener('click', () => auth.signO
 auth.onAuthStateChanged(async user => {
   usuarioActual = user;
   esAdmin = user && user.email === adminEmail;
+
+  // Mostrar/ocultar botones
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
+  document.querySelectorAll('.logged-only').forEach(el => el.style.display = user ? 'inline' : 'none');
+  document.getElementById('saludo').innerText = user ? `Hola, ${user.displayName}` : '';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
-  document.getElementById('user-name').innerText = user ? `Hola, ${user.displayName}` : '';
 
-  if (user) {
-    await cargarRecetas();
-    await cargarFavoritos();
-    await cargarPlanificador();
-    await generarListaCompras();
-  } else {
-    recetas = [];
-    favoritos = [];
-    planificador = {};
-    mostrarRecetas();
-  }
+  await cargarRecetas();
+  await cargarFavoritos();
+  await cargarPlanificador();
+  await generarListaCompras();
 });
 
-// Cargar recetas
+// CRUD Recetas
 async function cargarRecetas() {
   try {
     const snap = await db.collection('recetas').get();
@@ -66,7 +61,6 @@ async function cargarRecetas() {
   }
 }
 
-// Guardar receta
 async function guardarReceta() {
   const titulo = document.getElementById('titulo').value.trim();
   const ingredientes = document.getElementById('ingredientes').value.trim();
@@ -94,7 +88,18 @@ async function guardarReceta() {
   }
 }
 
-// Editar receta
+async function eliminarReceta(id) {
+  if (!confirm('¿Eliminar receta?')) return;
+  try {
+    await db.collection('recetas').doc(id).delete();
+    await cargarRecetas();
+    await cargarPlanificador();
+    await generarListaCompras();
+  } catch (e) {
+    alert('Error eliminando receta: ' + e.message);
+  }
+}
+
 function editarReceta(id) {
   const r = recetas.find(r => r.id === id);
   if (!r) return;
@@ -107,19 +112,6 @@ function editarReceta(id) {
   document.getElementById('categoria').value = r.categoria;
   recetaEnEdicion = r.id;
   mostrarFormulario();
-}
-
-// Eliminar receta
-async function eliminarReceta(id) {
-  if (!confirm('¿Eliminar receta?')) return;
-  try {
-    await db.collection('recetas').doc(id).delete();
-    await cargarRecetas();
-    await cargarPlanificador();
-    await generarListaCompras();
-  } catch (e) {
-    alert('Error eliminando receta: ' + e.message);
-  }
 }
 
 // Mostrar recetas
@@ -141,26 +133,27 @@ function mostrarRecetas() {
   }
 
   filtradas.forEach(r => {
-    const c = document.createElement('div'); c.className = 'card';
-    c.innerHTML = `
+    const card = document.createElement('div'); card.className = 'card';
+    card.innerHTML = `
       <img src="${r.imagen || 'https://via.placeholder.com/150'}" alt="">
-      <h3>${r.titulo}</h3>
-      <p>⏱ ${r.tiempo}</p>
-      <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
-      <p><strong>Preparación:</strong> ${r.preparacion}</p>
-      <p><strong>Categoría:</strong> ${r.categoria}</p>
-      ${usuarioActual ? `
+      <div class="card-content">
+        <h3>${r.titulo}</h3>
+        <p>⏱ ${r.tiempo}</p>
+        <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
+        <p><strong>Preparación:</strong> ${r.preparacion}</p>
+        <p><strong>Categoría:</strong> ${r.categoria}</p>
         <button onclick="toggleFavorito('${r.id}')">
           ${favoritos.includes(r.id) ? '❤️ Quitar favorito' : '🤍 Marcar favorito'}
         </button>
-        <button onclick="mostrarModalDia('${r.id}')">📆 Agendar</button>
-        <button onclick="compartir('${r.titulo}')">🔗 Compartir</button>
-        ${esAdmin ? `
-          <button onclick="editarReceta('${r.id}')">✏️ Editar</button>
-          <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>` : ''}
-      ` : ''}
-    `;
-    cont.appendChild(c);
+        ${usuarioActual ? `
+          <button onclick="mostrarModalDia('${r.id}')">📆 Agendar</button>
+          <button onclick="compartir('${r.titulo}')">🔗 Compartir</button>
+          ${esAdmin ? `
+            <button onclick="editarReceta('${r.id}')">✏️ Editar</button>
+            <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>` : ''}
+        ` : ''}
+      </div>`;
+    cont.appendChild(card);
   });
 }
 
@@ -170,8 +163,9 @@ async function toggleFavorito(id) {
   const ref = db.collection('usuarios').doc(usuarioActual.uid);
   const doc = await ref.get();
   let favs = (doc.exists && doc.data().favoritos) || [];
+  const esFav = favs.includes(id);
   try {
-    if (favs.includes(id)) {
+    if (esFav) {
       await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(id) });
     } else {
       await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge: true });
@@ -181,8 +175,9 @@ async function toggleFavorito(id) {
     alert('Error actualizando favorito: ' + e.message);
   }
 }
+
 async function cargarFavoritos() {
-  if (!usuarioActual) { favoritos = []; return; }
+  if (!usuarioActual) { favoritos=[]; return; }
   const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
   favoritos = (doc.exists && doc.data().favoritos) || [];
   mostrarRecetas();
@@ -198,6 +193,7 @@ function cerrarModalDia() {
   recetaAAgendar = null;
   document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
+
 async function agendarEnDias() {
   if (!usuarioActual) return alert('Inicia sesión primero');
   const checks = [...document.querySelectorAll('#modal-dia input[type="checkbox"]:checked')];
@@ -240,6 +236,7 @@ async function cargarPlanificador() {
     }
   }
 }
+
 async function quitarAgendado(dia, id) {
   if (!usuarioActual) return;
   try {
@@ -272,59 +269,44 @@ function cerrarFormulario() {
 // Lista de compras
 async function generarListaCompras() {
   if (!usuarioActual) return;
-  const cont = document.getElementById('lista-compras'); cont.innerHTML = '';
-  let ingredientes = [];
+  const listaContenedor = document.getElementById('lista-compras');
+  listaContenedor.innerHTML = '';
+  let todosIngredientes = [];
   const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   for (const dia of dias) {
     const doc = await db.collection('usuarios').doc(usuarioActual.uid)
       .collection('planificador').doc(dia).get();
     const ids = (doc.exists && doc.data().recetas) || [];
     ids.forEach(id => {
-      const r = recetas.find(r => r.id === id);
-      if (r) ingredientes.push(...r.ingredientes.split(',').map(i => i.trim()));
+      const receta = recetas.find(r => r.id === id);
+      if (receta) {
+        todosIngredientes.push(...receta.ingredientes.split(',').map(i => i.trim()));
+      }
     });
   }
-  if (ingredientes.length === 0) {
-    cont.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
+  if (todosIngredientes.length === 0) {
+    listaContenedor.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
     return;
   }
   const resumen = {};
-  ingredientes.forEach(item => {
-    const nombre = item.toLowerCase();
-    resumen[nombre] = (resumen[nombre] || 0) + 1;
+  todosIngredientes.forEach(item => {
+    const match = item.match(/^(\d+)\s+(.*)/);
+    if (match) {
+      const cantidad = parseInt(match[1]);
+      const nombre = match[2].toLowerCase();
+      resumen[nombre] = (resumen[nombre] || 0) + cantidad;
+    } else {
+      const nombre = item.toLowerCase();
+      if (!(nombre in resumen)) resumen[nombre] = '-';
+    }
   });
   const ul = document.createElement('ul');
   Object.entries(resumen).forEach(([nombre, cantidad]) => {
     const li = document.createElement('li');
-    li.textContent = `${cantidad} x ${nombre}`;
+    li.textContent = cantidad === '-' ? nombre : `${cantidad} ${nombre}`;
     ul.appendChild(li);
   });
-  cont.appendChild(ul);
-}
-
-// Sidebar
-function openNav() {
-  document.getElementById('mySidebar').style.width = '250px';
-  document.getElementById('overlay').style.display = 'block';
-}
-function closeNav() {
-  document.getElementById('mySidebar').style.width = '0';
-  document.getElementById('overlay').style.display = 'none';
-}
-
-// Mostrar secciones
-function mostrarFavoritos() {
-  document.getElementById('verFavoritos').checked = true;
-  mostrarRecetas();
-  closeNav();
-}
-function mostrarPlanificador() {
-  cargarPlanificador();
-  closeNav();
-}
-function mostrarListaCompras() {
-  generarListaCompras();
-  closeNav();
+  listaContenedor.appendChild(ul);
 }
 
 // Inicial
