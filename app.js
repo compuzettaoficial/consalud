@@ -257,7 +257,7 @@ function compartir(titulo) {
   }
 }
 
-// NUEVA: CARGAR PLANIFICADOR
+// NUEVO: cargarPlanificador mostrando categoría + botón quitar
 async function cargarPlanificador() {
   if (!usuarioActual) {
     document.getElementById('planificador').innerHTML = '<p>Inicia sesión para ver tu planificador.</p>';
@@ -277,7 +277,13 @@ async function cargarPlanificador() {
       } else {
         ids.forEach(id => {
           const r = recetas.find(rec => rec.id === id);
-          html += `<p>${r ? r.titulo : '(Receta eliminada)'}</p>`;
+          if (r) {
+            html += `<p>${r.categoria} - ${r.titulo} 
+              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
+          } else {
+            html += `<p>(Receta eliminada)
+              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
+          }
         });
       }
     });
@@ -285,6 +291,25 @@ async function cargarPlanificador() {
   } catch (e) {
     console.error('Error cargando planificador:', e);
     document.getElementById('planificador').innerHTML = '<p>Error al cargar el planificador.</p>';
+  }
+}
+
+// NUEVO: quitar receta de un día
+async function quitarDeDia(dia, id) {
+  if (!usuarioActual) return;
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    if (doc.exists) {
+      const datos = doc.data();
+      if (datos[dia]) {
+        datos[dia] = datos[dia].filter(rid => rid !== id);
+        await ref.set(datos);
+        await cargarPlanificador();
+      }
+    }
+  } catch (e) {
+    alert('Error al quitar receta: ' + e.message);
   }
 }
 
