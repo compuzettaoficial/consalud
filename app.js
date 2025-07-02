@@ -314,6 +314,134 @@ async function quitarDeDia(dia, id) {
     alert('Error al quitar receta: ' + e.message);
   }
 }
+// ... tu código original arriba sin cambios
+
+// NUEVO: mostrar planificador en modal
+async function mostrarPlanificador() {
+  if (!usuarioActual) {
+    alert('Inicia sesión para ver tu planificador.');
+    return;
+  }
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    const datos = doc.exists ? doc.data() : {};
+    let html = '';
+
+    const diasConRecetas = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+      .filter(dia => datos[dia] && datos[dia].length > 0);
+
+    if (diasConRecetas.length === 0) {
+      html = '<p>No tienes recetas planificadas aún.</p>';
+    } else {
+      diasConRecetas.forEach(dia => {
+        html += `<h4>${dia}</h4>`;
+        datos[dia].forEach(id => {
+          const r = recetas.find(rec => rec.id === id);
+          if (r) {
+            html += `<p>${r.categoria} - ${r.titulo} 
+              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
+          } else {
+            html += `<p>(Receta eliminada)
+              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
+          }
+        });
+      });
+    }
+    document.getElementById('modal-planificador-content').innerHTML = `
+      ${html}
+      <button onclick="imprimirContenido('modal-planificador-content')">🖨️ Imprimir</button>
+      <button onclick="descargarPDF('modal-planificador-content', 'planificador.pdf')">⬇️ Descargar PDF</button>
+    `;
+    document.getElementById('modal-planificador').style.display = 'block';
+  } catch (e) {
+    console.error('Error cargando planificador:', e);
+    alert('Error al cargar el planificador.');
+  }
+}
+
+// NUEVO: mostrar lista de compras en modal
+async function mostrarListaCompras() {
+  if (!usuarioActual) {
+    alert('Inicia sesión para ver la lista de compras.');
+    return;
+  }
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    const datos = doc.exists ? doc.data() : {};
+
+    const ingredientesTotales = {};
+
+    Object.values(datos).flat().forEach(id => {
+      const r = recetas.find(rec => rec.id === id);
+      if (r) {
+        r.ingredientes.split(',').forEach(ing => {
+          const clave = ing.trim().toLowerCase();
+          if (!clave) return;
+          if (ingredientesTotales[clave]) {
+            ingredientesTotales[clave] += 1;
+          } else {
+            ingredientesTotales[clave] = 1;
+          }
+        });
+      }
+    });
+
+    let html = '<ul>';
+    Object.entries(ingredientesTotales).forEach(([ing, cant]) => {
+      html += `<li>${cant > 1 ? cant + ' x ' : ''}${ing}</li>`;
+    });
+    html += '</ul>';
+
+    if (Object.keys(ingredientesTotales).length === 0) {
+      html = '<p>No hay ingredientes planificados aún.</p>';
+    }
+
+    document.getElementById('modal-lista-content').innerHTML = `
+      ${html}
+      <button onclick="imprimirContenido('modal-lista-content')">🖨️ Imprimir</button>
+      <button onclick="descargarPDF('modal-lista-content', 'lista_compras.pdf')">⬇️ Descargar PDF</button>
+    `;
+    document.getElementById('modal-lista').style.display = 'block';
+  } catch (e) {
+    console.error('Error generando lista:', e);
+    alert('Error al generar lista de compras.');
+  }
+}
+
+// NUEVO: imprimir
+function imprimirContenido(id) {
+  const contenido = document.getElementById(id).innerHTML;
+  const win = window.open('', '', 'height=600,width=800');
+  win.document.write('<html><head><title>Imprimir</title></head><body>');
+  win.document.write(contenido);
+  win.document.write('</body></html>');
+  win.document.close();
+  win.print();
+}
+
+// NUEVO: descargar como PDF
+function descargarPDF(id, filename) {
+  const contenido = document.getElementById(id).innerHTML;
+  const blob = new Blob([contenido], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// NUEVO: cerrar modales
+function cerrarModalPlanificador() {
+  document.getElementById('modal-planificador').style.display = 'none';
+}
+function cerrarModalLista() {
+  document.getElementById('modal-lista').style.display = 'none';
+}
+
+// ... tu código original abajo sin cambios
 
 // Inicial
 aplicarTemaGuardado();
