@@ -36,15 +36,17 @@ document.getElementById('logout-btn').addEventListener('click', () => auth.signO
 auth.onAuthStateChanged(async user => {
   usuarioActual = user;
   esAdmin = user && user.email === adminEmail;
-
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
-
+  if (user) {
+    await cargarFavoritos();
+    await cargarPlanificador();
+    await generarListaCompras();
+  } else {
+    favoritos = [];
+  }
   await cargarRecetas();
-  await cargarFavoritos();
-  await cargarPlanificador();
-  await generarListaCompras();
 });
 
 // CRUD Recetas
@@ -113,8 +115,7 @@ function editarReceta(id) {
 
 // Mostrar recetas
 function mostrarRecetas() {
-  const cont = document.getElementById('recetas'); 
-  cont.innerHTML = '';
+  const cont = document.getElementById('recetas'); cont.innerHTML = '';
   const txt = document.getElementById('busqueda').value.toLowerCase();
   const cat = document.getElementById('filtroCategoria').value;
   const verFav = document.getElementById('verFavoritos').checked;
@@ -125,23 +126,17 @@ function mostrarRecetas() {
   );
   if (verFav) filtradas = filtradas.filter(r => favoritos.includes(r.id));
 
-  if (filtradas.length === 0) {
-    cont.innerHTML = '<p>No se encontraron recetas.</p>';
-    return;
-  }
-
+  if (filtradas.length === 0) cont.innerHTML = '<p>No se encontraron recetas.</p>';
   filtradas.forEach(r => {
-    const c = document.createElement('div'); 
-    c.className = 'card';
+    const c = document.createElement('div'); c.className = 'card';
     c.innerHTML = `
       <img src="${r.imagen || 'https://via.placeholder.com/150'}" alt="">
       <h3>${r.titulo}</h3>
       <p>⏱ ${r.tiempo}</p>
-      <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
-      <p><strong>Preparación:</strong> ${r.preparacion}</p>
-      <p><strong>Categoría:</strong> ${r.categoria}</p>
+      <button onclick="toggleFavorito('${r.id}')">
+        ${favoritos.includes(r.id) ? '❤️ Quitar' : '🤍 Favorito'}
+      </button>
       ${usuarioActual ? `
-        <button onclick="toggleFavorito('${r.id}')">${favoritos.includes(r.id) ? '❤️ Quitar' : '🤍 Favorito'}</button>
         <button onclick="mostrarModalDia('${r.id}')">📆 Agendar</button>
         <button onclick="compartir('${r.titulo}')">🔗 Compartir</button>
         ${esAdmin ? `<button onclick="editarReceta('${r.id}')">✏️ Editar</button>
@@ -154,7 +149,10 @@ function mostrarRecetas() {
 
 // Favoritos
 async function toggleFavorito(id) {
-  if (!usuarioActual) return alert('Inicia sesión primero');
+  if (!usuarioActual) {
+    alert('Debes iniciar sesión para usar favoritos.');
+    return;
+  }
   const ref = db.collection('usuarios').doc(usuarioActual.uid);
   const doc = await ref.get();
   let favs = (doc.exists && doc.data().favoritos) || [];
@@ -166,11 +164,8 @@ async function toggleFavorito(id) {
       await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge: true });
     }
     await cargarFavoritos();
-  } catch (e) {
-    alert('Error actualizando favorito: ' + e.message);
-  }
+  } catch (e) { alert('Error: ' + e.message); }
 }
-
 async function cargarFavoritos() {
   if (!usuarioActual) { favoritos=[]; return; }
   const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
@@ -178,7 +173,14 @@ async function cargarFavoritos() {
   mostrarRecetas();
 }
 
-// Modal agendar
+// Mostrar modales
+function mostrarFormulario() {
+  document.getElementById('formulario').style.display = 'block';
+}
+function cerrarFormulario() {
+  document.getElementById('formulario').style.display = 'none';
+  recetaEnEdicion = null;
+}
 function mostrarModalDia(id) {
   recetaAAgendar = id;
   document.getElementById('modal-dia').style.display = 'block';
@@ -189,119 +191,20 @@ function cerrarModalDia() {
   document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
 
-async function agendarEnDias() {
-  if (!usuarioActual) return alert('Inicia sesión primero');
-  const checks = [...document.querySelectorAll('#modal-dia input[type="checkbox"]:checked')];
-  if (checks.length === 0) return alert('Selecciona al menos un día');
-  try {
-    for (const cb of checks) {
-      await db.collection('usuarios').doc(usuarioActual.uid)
-        .collection('planificador').doc(cb.value)
-        .set({ recetas: firebase.firestore.FieldValue.arrayUnion(recetaAAgendar) }, { merge: true });
-    }
-    cerrarModalDia();
-    await cargarPlanificador();
-    await generarListaCompras();
-  } catch (e) {
-    alert('Error agendando: ' + e.message);
-  }
+// Botones globales
+function mostrarFavoritos() {
+  document.getElementById('verFavoritos').checked = true;
+  mostrarRecetas();
 }
-
-// Planificador
-async function cargarPlanificador() {
-  if (!usuarioActual) return;
-  const cont = document.getElementById('planificador'); cont.innerHTML = '';
-  const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  for (const dia of dias) {
-    const doc = await db.collection('usuarios').doc(usuarioActual.uid)
-      .collection('planificador').doc(dia).get();
-    const ids = (doc.exists && doc.data().recetas) || [];
-    const recetasValidas = ids.map(id => recetas.find(r => r.id === id)).filter(Boolean);
-    if (recetasValidas.length > 0) {
-      const div = document.createElement('div'); div.className = 'card';
-      div.innerHTML = `<h4>${dia}</h4>`;
-      recetasValidas.forEach(r => {
-        div.innerHTML += `
-          <div class="plan-item">
-            <span>${r.categoria}: ${r.titulo}</span>
-            <button onclick="quitarAgendado('${dia}','${r.id}')">❌</button>
-          </div>`;
-      });
-      cont.appendChild(div);
-    }
-  }
+function mostrarTodasRecetas() {
+  document.getElementById('verFavoritos').checked = false;
+  mostrarRecetas();
 }
-
-async function quitarAgendado(dia, id) {
-  if (!usuarioActual) return;
-  try {
-    await db.collection('usuarios').doc(usuarioActual.uid)
-      .collection('planificador').doc(dia)
-      .update({ recetas: firebase.firestore.FieldValue.arrayRemove(id) });
-    await cargarPlanificador();
-    await generarListaCompras();
-  } catch (e) {
-    alert('Error quitando del planificador: ' + e.message);
-  }
+function mostrarPlanificador() {
+  cargarPlanificador();
 }
-
-// Compartir
-function compartir(titulo) {
-  navigator.clipboard.writeText(location.href + '?q=' + encodeURIComponent(titulo))
-    .then(() => alert('Enlace copiado'))
-    .catch(() => alert('Error copiando'));
-}
-
-// Formularios
-function mostrarFormulario() {
-  document.getElementById('formulario').style.display = 'block';
-}
-function cerrarFormulario() {
-  document.getElementById('formulario').style.display = 'none';
-  recetaEnEdicion = null;
-}
-
-// Lista de compras
-async function generarListaCompras() {
-  if (!usuarioActual) return;
-  const listaContenedor = document.getElementById('lista-compras');
-  listaContenedor.innerHTML = '';
-  let todosIngredientes = [];
-  const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  for (const dia of dias) {
-    const doc = await db.collection('usuarios').doc(usuarioActual.uid)
-      .collection('planificador').doc(dia).get();
-    const ids = (doc.exists && doc.data().recetas) || [];
-    ids.forEach(id => {
-      const receta = recetas.find(r => r.id === id);
-      if (receta) {
-        todosIngredientes.push(...receta.ingredientes.split(',').map(i => i.trim()));
-      }
-    });
-  }
-  if (todosIngredientes.length === 0) {
-    listaContenedor.innerHTML = '<p>No hay ingredientes por mostrar.</p>';
-    return;
-  }
-  const resumen = {};
-  todosIngredientes.forEach(item => {
-    const match = item.match(/^(\d+)\s+(.*)/);
-    if (match) {
-      const cantidad = parseInt(match[1]);
-      const nombre = match[2].toLowerCase();
-      resumen[nombre] = (resumen[nombre] || 0) + cantidad;
-    } else {
-      const nombre = item.toLowerCase();
-      if (!(nombre in resumen)) resumen[nombre] = '-';
-    }
-  });
-  const ul = document.createElement('ul');
-  Object.entries(resumen).forEach(([nombre, cantidad]) => {
-    const li = document.createElement('li');
-    li.textContent = cantidad === '-' ? nombre : `${cantidad} ${nombre}`;
-    ul.appendChild(li);
-  });
-  listaContenedor.appendChild(ul);
+function mostrarListaCompras() {
+  generarListaCompras();
 }
 
 // Inicial
