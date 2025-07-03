@@ -1,11 +1,24 @@
-let recetas = []; 
+const firebaseConfig = {
+  apiKey: "AIzaSyBcJ4tbucMLF3lTuDne5cyin4oyoVhTfSs",
+  authDomain: "consalud-recetas.firebaseapp.com",
+  projectId: "consalud-recetas",
+  storageBucket: "consalud-recetas.appspot.com",
+  messagingSenderId: "477690744464",
+  appId: "1:477690744464:web:597172e85fd29549fd9215"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const adminEmail = "compuzettaoficial@gmail.com";
+
+let recetas = [];
 let planificador = {};
 let recetaAAgendar = null;
 let recetaEnEdicion = null;
 let usuarioActual = null;
 let esAdmin = false;
 let favoritos = [];
-let mostrandoFavoritos = false; // NUEVO: para alternar
+let favoritosActivos = false; // Nuevo: control toggle favoritos
 
 // Tema claro/oscuro
 document.getElementById('toggle-theme').addEventListener('click', () => {
@@ -22,7 +35,7 @@ function aplicarTemaGuardado() {
   }
 }
 
-// Login / Logout
+// Login/Logout
 document.getElementById('login-btn').addEventListener('click', async () => {
   const provider = new firebase.auth.GoogleAuthProvider();
   try { await auth.signInWithPopup(provider); }
@@ -30,14 +43,13 @@ document.getElementById('login-btn').addEventListener('click', async () => {
 });
 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
 
-// Escuchar sesión
+// Escuchar cambios de sesión
 auth.onAuthStateChanged(async user => {
   usuarioActual = user;
   esAdmin = user && user.email === adminEmail;
   document.getElementById('login-btn').style.display = user ? 'none' : '';
   document.getElementById('logout-btn').style.display = user ? '' : 'none';
   document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
-
   if (user) {
     document.getElementById('saludo').innerText = `Hola, ${user.displayName || user.email}`;
     await cargarFavoritos();
@@ -55,10 +67,9 @@ async function cargarRecetas() {
     const snap = await db.collection('recetas').get();
     recetas = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     mostrarRecetas();
-  } catch (e) {
-    console.error('Error cargando recetas:', e);
-  }
+  } catch (e) { console.error('Error cargando recetas:', e); }
 }
+
 async function guardarReceta() {
   const titulo = document.getElementById('titulo').value.trim();
   const ingredientes = document.getElementById('ingredientes').value.trim();
@@ -66,10 +77,12 @@ async function guardarReceta() {
   const imagen = document.getElementById('imagen').value.trim();
   const preparacion = document.getElementById('preparacion').value.trim();
   const categoria = document.getElementById('categoria').value;
+
   if (!titulo || !ingredientes || !tiempo || !preparacion || !categoria) {
     alert('Completa todos los campos.');
     return;
   }
+
   try {
     if (recetaEnEdicion) {
       await db.collection('recetas').doc(recetaEnEdicion)
@@ -79,16 +92,14 @@ async function guardarReceta() {
     }
     cerrarFormulario();
     await cargarRecetas();
-  } catch (e) {
-    alert('Error guardando receta: ' + e.message);
-  }
+  } catch (e) { alert('Error guardando receta: ' + e.message); }
 }
+
 async function eliminarReceta(id) {
   if (!confirm('¿Eliminar receta?')) return;
   try {
     await db.collection('recetas').doc(id).delete();
-
-    // Eliminar del planificador
+    // Eliminar también del planificador
     const ref = db.collection('planificadores').doc(usuarioActual.uid);
     const doc = await ref.get();
     if (doc.exists) {
@@ -100,10 +111,9 @@ async function eliminarReceta(id) {
     }
     await cargarRecetas();
     await cargarPlanificador();
-  } catch (e) {
-    alert('Error eliminando receta: ' + e.message);
-  }
+  } catch (e) { alert('Error eliminando receta: ' + e.message); }
 }
+
 function editarReceta(id) {
   const r = recetas.find(r => r.id === id);
   if (!r) return;
@@ -117,17 +127,18 @@ function editarReceta(id) {
   recetaEnEdicion = r.id;
   mostrarFormulario();
 }
-
 // Mostrar recetas
 function mostrarRecetas() {
   const cont = document.getElementById('recetas'); cont.innerHTML = '';
   const txt = document.getElementById('busqueda').value.toLowerCase();
   const cat = document.getElementById('filtroCategoria').value;
+
   let filtradas = recetas.filter(r =>
     (!txt || r.titulo.toLowerCase().includes(txt) || r.ingredientes.toLowerCase().includes(txt)) &&
     (!cat || r.categoria === cat)
   );
-  if (mostrandoFavoritos) filtradas = filtradas.filter(r => favoritos.includes(r.id));
+  if (favoritosActivos) filtradas = filtradas.filter(r => favoritos.includes(r.id));
+
   if (filtradas.length === 0) cont.innerHTML = '<p>No se encontraron recetas.</p>';
   filtradas.forEach(r => {
     const c = document.createElement('div'); c.className = 'card';
@@ -150,6 +161,7 @@ function mostrarRecetas() {
     cont.appendChild(c);
   });
 }
+
 // Favoritos
 async function toggleFavorito(id) {
   if (!usuarioActual) {
@@ -176,13 +188,13 @@ async function cargarFavoritos() {
   mostrarRecetas();
 }
 
-// NUEVO: Botón favoritos abajo (barra inferior)
-document.getElementById('btn-favoritos').addEventListener('click', () => {
-  mostrandoFavoritos = !mostrandoFavoritos;
+// Toggle mostrar favoritos
+function toggleVerFavoritos() {
+  favoritosActivos = !favoritosActivos;
   mostrarRecetas();
-});
+}
 
-// Modales
+// Mostrar modales
 function mostrarFormulario() {
   document.getElementById('formulario').style.display = 'block';
 }
@@ -200,7 +212,7 @@ function cerrarModalDia() {
   document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
 
-// Planificador y lista compras como estaban: imprimir y descargar PDF con logo
+// Planificador / lista compras / imprimir / descargar PDF
 function imprimirContenido(id) {
   const contenido = document.getElementById(id).innerHTML;
   const logo = '<img src="img/logo.negro.png" class="print-logo">';
@@ -227,7 +239,7 @@ function descargarPDF(id, filename) {
   URL.revokeObjectURL(url);
 }
 
-// Compartir SOLO receta
+// Compartir solo receta
 function compartir(id) {
   if (!usuarioActual) {
     alert('Debes iniciar sesión para compartir.');
