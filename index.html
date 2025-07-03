@@ -10,38 +10,44 @@
 </head>
 <body>
 <div class="topbar">
-  <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
-  <div id="saludo"></div>
+  <div style="display:flex; align-items:center;">
+    <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
+    <div id="saludo"></div>
+  </div>
   <div class="topbar-buttons">
     <button id="login-btn">Iniciar Sesión</button>
     <button id="logout-btn" style="display:none">Cerrar Sesión</button>
     <button id="toggle-theme">🌙</button>
   </div>
-  </div>
-  <div class="container">
-    <h1>Recetas Saludables</h1>
-    <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
+</div>
 
-    <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()">
-    <select id="filtroCategoria" onchange="mostrarRecetas()">
-      <option value="">Todas</option>
-      <option value="Desayuno">Desayuno</option>
-      <option value="Almuerzo">Almuerzo</option>
-      <option value="Cena">Cena</option>
-      <option value="Snack">Snack</option>
-      <option value="Postre">Postre</option>
-      <option value="Veganas">Veganas</option>
-    </select>
-    <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
+<div class="container">
+  <h1>Recetas Saludables</h1>
+  <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
 
-    <div id="recetas"></div>
-  </div>
+  <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()">
+  <select id="filtroCategoria" onchange="mostrarRecetas()">
+    <option value="">Todas</option>
+    <option value="Desayuno">Desayuno</option>
+    <option value="Almuerzo">Almuerzo</option>
+    <option value="Cena">Cena</option>
+    <option value="Snack">Snack</option>
+    <option value="Postre">Postre</option>
+    <option value="Veganas">Veganas</option>
+  </select>
+  <label><input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Ver Favoritos</label>
 
-  <!-- MODAL: seleccionar días para agendar -->
-  <div id="modal-dia" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="cerrarModalDia()">&times;</span>
+  <div id="recetas"></div>
+</div>
+
+<!-- MODAL: seleccionar días para agendar -->
+<div id="modal-dia" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
       <h3>Selecciona días para agendar:</h3>
+      <button class="close" onclick="cerrarModalDia()">&times;</button>
+    </div>
+    <div class="modal-body">
       <label><input type="checkbox" value="Lunes"> Lunes</label>
       <label><input type="checkbox" value="Martes"> Martes</label>
       <label><input type="checkbox" value="Miércoles"> Miércoles</label>
@@ -52,12 +58,16 @@
       <button onclick="agendarEnDias()">Agendar</button>
     </div>
   </div>
+</div>
 
-  <!-- MODAL: formulario agregar/editar receta -->
-  <div id="formulario" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="cerrarFormulario()">&times;</span>
+<!-- MODAL: formulario agregar/editar receta -->
+<div id="formulario" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
       <h3 id="form-title">Agregar Receta</h3>
+      <button class="close" onclick="cerrarFormulario()">&times;</button>
+    </div>
+    <div class="modal-body">
       <input type="text" id="titulo" placeholder="Título">
       <textarea id="ingredientes" placeholder="Ingredientes separados por coma"></textarea>
       <input type="text" id="tiempo" placeholder="Tiempo de preparación">
@@ -75,38 +85,43 @@
       <button onclick="guardarReceta()">Guardar</button>
     </div>
   </div>
+</div>
 
-  <!-- MODAL: planificador semanal -->
-  <div id="modal-planificador" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="cerrarModalPlanificador()">&times;</span>
+<!-- MODAL: planificador semanal -->
+<div id="modal-planificador" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
       <h3>📆 Planificador Semanal</h3>
-      <div id="modal-planificador-content"></div>
+      <button class="close" onclick="cerrarModalPlanificador()">&times;</button>
     </div>
+    <div class="modal-body" id="modal-planificador-content"></div>
   </div>
+</div>
 
-  <!-- MODAL: lista de compras -->
-  <div id="modal-lista" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="cerrarModalLista()">&times;</span>
+<!-- MODAL: lista de compras -->
+<div id="modal-lista" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
       <h3>🛒 Lista de Compras</h3>
-      <div id="modal-lista-content"></div>
+      <button class="close" onclick="cerrarModalLista()">&times;</button>
     </div>
+    <div class="modal-body" id="modal-lista-content"></div>
   </div>
+</div>
 
-  <!-- Barra inferior -->
-  <div class="bottom-bar">
-    <button onclick="mostrarTodasRecetas()">🏠</button>
-    <button onclick="mostrarFavoritos()">❤️</button>
-    <button onclick="mostrarPlanificador()">📅</button>
-    <button onclick="mostrarListaCompras()">🛒</button>
-  </div>
+<!-- Barra inferior -->
+<div class="bottom-bar">
+  <button onclick="mostrarTodasRecetas()">🏠</button>
+  <button onclick="mostrarFavoritos()">❤️</button>
+  <button onclick="mostrarPlanificador()">📅</button>
+  <button onclick="mostrarListaCompras()">🛒</button>
+</div>
 
-  <!-- Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="firebase-config.js"></script>
-  <script src="app.js"></script>
+<!-- Scripts -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
