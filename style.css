@@ -18,7 +18,7 @@ body.dark { background: #222; color: #eee; }
   color: white;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* divide izquierda y derecha */
+  justify-content: space-between;
   padding: 8px;
   z-index: 1000;
 }
@@ -53,7 +53,7 @@ body.dark { background: #222; color: #eee; }
 body.dark .container { background: #333; }
 
 .agregar-btn, button {
-  background: #7FB77E; /* color más suave */
+  background: #7FB77E;
   color: white; border: none;
   padding: 8px 12px; margin: 5px 3px;
   border-radius: 8px; cursor: pointer;
@@ -101,12 +101,23 @@ body.dark .card { background: #3a3a3a; }
   background: rgba(0,0,0,0.5);
 }
 .modal-content {
-  background: #fff; margin: 5% auto; padding: 20px;
+  background: #fff; margin: 5% auto; padding: 0;
   width: 90%; max-width: 500px; border-radius: 12px;
   max-height: 80vh; overflow-y: auto;
 }
 body.dark .modal-content { background: #333; color: #eee; }
-.close { float: right; font-size: 24px; cursor: pointer; }
+
+.modal-header {
+  position: sticky; top: 0;
+  background: #4CAF50; color: white;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; border-top-left-radius: 12px; border-top-right-radius: 12px;
+  z-index: 10;
+}
+.modal-header h3 { margin: 0; font-size: 1.1rem; }
+.close { font-size: 24px; cursor: pointer; background: none; border: none; color: white; }
+
+.modal-body { padding: 12px; }
 
 .bottom-bar {
   position: fixed; bottom: 0; left: 0;
@@ -120,3 +131,14 @@ body.dark .modal-content { background: #333; color: #eee; }
   transition: color 0.3s;
 }
 .bottom-bar button:hover { color: #111; }
+
+/* Estilos impresión */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; top: 0; left: 0; width: 100%; }
+  .print-logo { display: block; margin: 0 auto; height: 60px; }
+  .print-title { text-align: center; font-size: 1.5rem; color: #000; margin: 10px 0; }
+  .print-day { color: #4CAF50; font-weight: bold; margin-top: 8px; }
+  .print-category { font-weight: bold; }
+}
