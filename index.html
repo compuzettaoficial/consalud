@@ -3,134 +3,240 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Con Salud - Descubre recetas saludables, planifica tus comidas semanales y genera listas de compras automáticamente. Tu aliado para una alimentación equilibrada.">
+  <meta name="keywords" content="recetas saludables, planificador de comidas, lista de compras, alimentación equilibrada, cocina saludable">
+  <meta name="author" content="Con Salud">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://consalud.app/">
+  <meta property="og:title" content="Con Salud - Recetas Saludables">
+  <meta property="og:description" content="Descubre recetas saludables, planifica tus comidas y genera listas de compras automáticamente.">
+  <meta property="og:image" content="img/logo.png">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://consalud.app/">
+  <meta property="twitter:title" content="Con Salud - Recetas Saludables">
+  <meta property="twitter:description" content="Descubre recetas saludables, planifica tus comidas y genera listas de compras automáticamente.">
+  <meta property="twitter:image" content="img/logo.png">
+  
   <title>Con Salud - Recetas Saludables</title>
-  <link rel="icon" href="img/logo.svg" type="image/svg+xml"> <!-- Icono de la página -->
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Theme color for mobile browsers -->
+  <meta name="theme-color" content="#4CAF50">
+  <meta name="msapplication-TileColor" content="#4CAF50">
 </head>
 <body>
-<!-- Barra superior fija con logo, saludo y botones -->
-<div class="topbar">
-  <div style="display:flex; align-items:center;">
-    <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
-    <div id="saludo"></div>
-  </div>
-  <div class="topbar-buttons">
-    <button id="login-btn">Iniciar Sesión</button>
-    <button id="logout-btn" style="display:none">Cerrar Sesión</button>
-    <button id="toggle-theme">🌙</button>
-  </div>
-</div>
-
-<!-- Contenedor principal -->
-<div class="container">
-  <h1>Recetas Saludables</h1>
-  <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
-
-  <!-- Buscador y filtros -->
-  <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()">
-  <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
-    <select id="filtroCategoria" onchange="mostrarRecetas()">
-      <option value="">Todas</option>
-      <option value="Desayuno">Desayuno</option>
-      <option value="Almuerzo">Almuerzo</option>
-      <option value="Cena">Cena</option>
-      <option value="Snack">Snack</option>
-      <option value="Postre">Postre</option>
-      <option value="Veganas">Veganas</option>
-    </select>
-    <label style="display:flex; align-items:center; gap:4px;">
-      <input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Favoritos
-    </label>
-  </div>
-
-  <!-- Contenedor de tarjetas de recetas -->
-  <div id="recetas"></div>
-</div>
-
-<!-- Modal para seleccionar días del planificador -->
-<div id="modal-dia" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Selecciona días para agendar:</h3>
-      <button class="close" onclick="cerrarModalDia()">&times;</button>
+  <!-- Skip to main content for accessibility -->
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+  
+  <!-- Barra superior fija con logo, saludo y botones -->
+  <header class="topbar" role="banner">
+    <div class="topbar-left">
+      <img src="img/logo.png" alt="Con Salud - Logo" class="logo" id="logo">
+      <div id="saludo" role="status" aria-live="polite"></div>
     </div>
-    <div class="modal-body">
-      <label><input type="checkbox" value="Lunes"> Lunes</label>
-      <label><input type="checkbox" value="Martes"> Martes</label>
-      <label><input type="checkbox" value="Miércoles"> Miércoles</label>
-      <label><input type="checkbox" value="Jueves"> Jueves</label>
-      <label><input type="checkbox" value="Viernes"> Viernes</label>
-      <label><input type="checkbox" value="Sábado"> Sábado</label>
-      <label><input type="checkbox" value="Domingo"> Domingo</label>
-      <button onclick="agendarEnDias()">Agendar</button>
-    </div>
-  </div>
-</div>
+    <nav class="topbar-buttons" role="navigation" aria-label="Navegación de usuario">
+      <button id="login-btn" type="button" aria-label="Iniciar sesión">Iniciar Sesión</button>
+      <button id="logout-btn" type="button" style="display:none" aria-label="Cerrar sesión">Cerrar Sesión</button>
+      <button id="toggle-theme" type="button" aria-label="Cambiar tema oscuro/claro">🌙</button>
+    </nav>
+  </header>
 
-<!-- Modal para agregar o editar receta -->
-<div id="formulario" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 id="form-title">Agregar Receta</h3>
-      <button class="close" onclick="cerrarFormulario()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <input type="text" id="titulo" placeholder="Título">
-      <textarea id="ingredientes" placeholder="Ingredientes separados por coma"></textarea>
-      <input type="text" id="tiempo" placeholder="Tiempo de preparación">
-      <input type="text" id="imagen" placeholder="URL de imagen">
-      <textarea id="preparacion" placeholder="Pasos de preparación"></textarea>
-      <select id="categoria">
-        <option value="">Selecciona Categoría</option>
-        <option value="Desayuno">Desayuno</option>
-        <option value="Almuerzo">Almuerzo</option>
-        <option value="Cena">Cena</option>
-        <option value="Snack">Snack</option>
-        <option value="Postre">Postre</option>
-        <option value="Veganas">Veganas</option>
-      </select>
-      <button onclick="guardarReceta()">Guardar</button>
+  <!-- Contenedor principal -->
+  <main class="container" id="main-content" role="main">
+    <h1>Recetas Saludables</h1>
+    <button class="agregar-btn" type="button" style="display:none" onclick="mostrarFormulario()" aria-label="Agregar nueva receta">+ Agregar Receta</button>
+
+    <!-- Sección de búsqueda y filtros -->
+    <section class="search-filters" aria-label="Búsqueda y filtros">
+      <div class="search-container">
+        <label for="busqueda" class="visually-hidden">Buscar recetas</label>
+        <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()" aria-describedby="search-help">
+        <small id="search-help" class="visually-hidden">Escribe para buscar recetas por nombre o ingredientes</small>
+      </div>
+      
+      <div class="filter-container">
+        <label for="filtroCategoria" class="visually-hidden">Filtrar por categoría</label>
+        <select id="filtroCategoria" onchange="mostrarRecetas()" aria-label="Filtrar recetas por categoría">
+          <option value="">Todas las categorías</option>
+          <option value="Desayuno">Desayuno</option>
+          <option value="Almuerzo">Almuerzo</option>
+          <option value="Cena">Cena</option>
+          <option value="Snack">Snack</option>
+          <option value="Postre">Postre</option>
+          <option value="Veganas">Veganas</option>
+        </select>
+        
+        <label class="checkbox-label">
+          <input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()" aria-describedby="favorites-help">
+          <span>Mostrar solo favoritos</span>
+        </label>
+        <small id="favorites-help" class="visually-hidden">Activa para ver únicamente tus recetas favoritas</small>
+      </div>
+    </section>
+
+    <!-- Contenedor de tarjetas de recetas -->
+    <section class="recipes-section" aria-label="Lista de recetas">
+      <div id="recetas" role="grid" aria-label="Recetas disponibles"></div>
+      <div id="no-results" class="no-results" style="display:none" role="status" aria-live="polite">
+        <p>No se encontraron recetas que coincidan con tu búsqueda.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal para seleccionar días del planificador -->
+  <div id="modal-dia" class="modal" role="dialog" aria-labelledby="modal-dia-title" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h3 id="modal-dia-title">Selecciona días para agendar:</h3>
+        <button class="close" type="button" onclick="cerrarModalDia()" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <fieldset>
+          <legend class="visually-hidden">Selecciona los días de la semana</legend>
+          <div class="day-checkboxes">
+            <label class="day-label"><input type="checkbox" value="Lunes"> Lunes</label>
+            <label class="day-label"><input type="checkbox" value="Martes"> Martes</label>
+            <label class="day-label"><input type="checkbox" value="Miércoles"> Miércoles</label>
+            <label class="day-label"><input type="checkbox" value="Jueves"> Jueves</label>
+            <label class="day-label"><input type="checkbox" value="Viernes"> Viernes</label>
+            <label class="day-label"><input type="checkbox" value="Sábado"> Sábado</label>
+            <label class="day-label"><input type="checkbox" value="Domingo"> Domingo</label>
+          </div>
+        </fieldset>
+        <button type="button" onclick="agendarEnDias()" class="btn-primary">Agendar</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Modal del planificador semanal -->
-<div id="modal-planificador" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>📆 Planificador Semanal</h3>
-      <button class="close" onclick="cerrarModalPlanificador()">&times;</button>
+  <!-- Modal para agregar o editar receta -->
+  <div id="formulario" class="modal" role="dialog" aria-labelledby="form-title" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h3 id="form-title">Agregar Receta</h3>
+        <button class="close" type="button" onclick="cerrarFormulario()" aria-label="Cerrar formulario">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="recipe-form" novalidate>
+          <div class="form-group">
+            <label for="titulo">Título de la receta *</label>
+            <input type="text" id="titulo" name="titulo" placeholder="Ej: Ensalada de quinoa" required aria-describedby="titulo-error">
+            <span id="titulo-error" class="error-message" role="alert"></span>
+          </div>
+          
+          <div class="form-group">
+            <label for="ingredientes">Ingredientes *</label>
+            <textarea id="ingredientes" name="ingredientes" placeholder="Ingredientes separados por coma&#10;Ej: 1 taza de quinoa, 2 tomates, 1 pepino..." required aria-describedby="ingredientes-help ingredientes-error"></textarea>
+            <small id="ingredientes-help">Separa cada ingrediente con una coma</small>
+            <span id="ingredientes-error" class="error-message" role="alert"></span>
+          </div>
+          
+          <div class="form-group">
+            <label for="tiempo">Tiempo de preparación</label>
+            <input type="text" id="tiempo" name="tiempo" placeholder="Ej: 30 minutos" aria-describedby="tiempo-help">
+            <small id="tiempo-help">Tiempo aproximado de preparación</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="imagen">URL de imagen</label>
+            <input type="url" id="imagen" name="imagen" placeholder="https://ejemplo.com/imagen.jpg" aria-describedby="imagen-help">
+            <small id="imagen-help">URL de una imagen que represente la receta</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="preparacion">Pasos de preparación *</label>
+            <textarea id="preparacion" name="preparacion" placeholder="Describe paso a paso cómo preparar la receta..." required aria-describedby="preparacion-error"></textarea>
+            <span id="preparacion-error" class="error-message" role="alert"></span>
+          </div>
+          
+          <div class="form-group">
+            <label for="categoria">Categoría *</label>
+            <select id="categoria" name="categoria" required aria-describedby="categoria-error">
+              <option value="">Selecciona una categoría</option>
+              <option value="Desayuno">Desayuno</option>
+              <option value="Almuerzo">Almuerzo</option>
+              <option value="Cena">Cena</option>
+              <option value="Snack">Snack</option>
+              <option value="Postre">Postre</option>
+              <option value="Veganas">Veganas</option>
+            </select>
+            <span id="categoria-error" class="error-message" role="alert"></span>
+          </div>
+          
+          <button type="button" onclick="guardarReceta()" class="btn-primary">Guardar Receta</button>
+        </form>
+      </div>
     </div>
-    <div class="modal-body" id="modal-planificador-content"></div>
   </div>
-</div>
 
-<!-- Modal de lista de compras -->
-<div id="modal-lista" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>🛒 Lista de Compras</h3>
-      <button class="close" onclick="cerrarModalLista()">&times;</button>
+  <!-- Modal del planificador semanal -->
+  <div id="modal-planificador" class="modal" role="dialog" aria-labelledby="modal-planificador-title" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h3 id="modal-planificador-title">📆 Planificador Semanal</h3>
+        <button class="close" type="button" onclick="cerrarModalPlanificador()" aria-label="Cerrar planificador">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-planificador-content" aria-live="polite"></div>
     </div>
-    <div class="modal-body" id="modal-lista-content"></div>
   </div>
-</div>
 
-<!-- Barra inferior fija -->
-<div class="bottom-bar">
-  <button onclick="mostrarTodasRecetas()">🏠</button>
-  <button onclick="mostrarFavoritos()">❤️</button>
-  <button onclick="mostrarPlanificador()">📅</button>
-  <button onclick="mostrarListaCompras()">🛒</button>
-</div>
+  <!-- Modal de lista de compras -->
+  <div id="modal-lista" class="modal" role="dialog" aria-labelledby="modal-lista-title" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h3 id="modal-lista-title">🛒 Lista de Compras</h3>
+        <button class="close" type="button" onclick="cerrarModalLista()" aria-label="Cerrar lista de compras">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-lista-content" aria-live="polite"></div>
+    </div>
+  </div>
 
-<!-- Scripts -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="firebase-config.js"></script>
-<script src="app.js"></script>
+  <!-- Barra inferior fija -->
+  <nav class="bottom-bar" role="navigation" aria-label="Navegación principal">
+    <button type="button" onclick="mostrarTodasRecetas()" aria-label="Ir a inicio" title="Inicio">🏠</button>
+    <button type="button" onclick="mostrarFavoritos()" aria-label="Ver favoritos" title="Favoritos">❤️</button>
+    <button type="button" onclick="mostrarPlanificador()" aria-label="Abrir planificador" title="Planificador">📅</button>
+    <button type="button" onclick="mostrarListaCompras()" aria-label="Ver lista de compras" title="Lista de compras">🛒</button>
+  </nav>
+
+  <!-- Área para impresión (oculta por defecto) -->
+  <div id="print-area" style="display:none;" aria-hidden="true"></div>
+
+  <!-- Loading indicator -->
+  <div id="loading-indicator" class="loading-indicator" aria-hidden="true">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  
+  <!-- Service Worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(function(error) {
+            console.log('ServiceWorker registration failed: ', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
