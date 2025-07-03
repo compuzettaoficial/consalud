@@ -41,9 +41,7 @@ body.dark { background: #222; color: #eee; }
   margin-right: 10px;
 }
 
-#saludo {
-  font-weight: 500;
-}
+#saludo { font-weight: 500; }
 
 .container {
   max-width: 900px; margin: 60px auto 80px auto; padding: 10px;
