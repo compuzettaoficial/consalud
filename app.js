@@ -375,6 +375,25 @@ function mostrarFavoritos() {
   document.getElementById('verFavoritos').checked = true;
   mostrarRecetas();
 }
+// Volver al inicio
+function mostrarTodasRecetas() {
+  document.getElementById('recetas').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Modificar imprimirContenido para incluir logo y títulos
+function imprimirContenido(id) {
+  const contenido = document.getElementById(id).innerHTML;
+  const logo = '<img src="img/logo.png" class="print-logo">';
+  const titulo = '<div class="print-title">Lista Semanal</div>';
+  const win = window.open('', '', 'height=600,width=800');
+  win.document.write('<html><head><title>Imprimir</title>');
+  win.document.write('<link rel="stylesheet" href="style.css">');
+  win.document.write('</head><body id="print-area">');
+  win.document.write(logo + titulo + contenido);
+  win.document.write('</body></html>');
+  win.document.close();
+  win.print();
+}
 
 // Inicial
 aplicarTemaGuardado();
