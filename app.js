@@ -1,241 +1,391 @@
-// Inicializa Firebase Auth y Firestore
-const auth = firebase.auth();
-const db = firebase.firestore();
+let recetas = [];
+let planificador = {};
+let recetaAAgendar = null;
+let recetaEnEdicion = null;
+let usuarioActual = null;
+let esAdmin = false;
+let favoritos = [];
 
-let usuarioActual = null; // Guardará la información del usuario logueado
-let recetaEditandoId = null; // Si editamos una receta, guardamos su ID aquí
-
-// Detecta cambios de sesión (login/logout)
-auth.onAuthStateChanged(user => {
-  usuarioActual = user;
-  if (user) {
-    document.getElementById('login-btn').style.display = 'none';
-    document.getElementById('logout-btn').style.display = 'inline-block';
-    document.getElementById('saludo').innerText = `Hola, ${user.email}`;
-    document.querySelector('.agregar-btn').style.display = 'inline-block';
-  } else {
-    document.getElementById('login-btn').style.display = 'inline-block';
-    document.getElementById('logout-btn').style.display = 'none';
-    document.getElementById('saludo').innerText = '';
-    document.querySelector('.agregar-btn').style.display = 'none';
+// Tema claro/oscuro
+document.getElementById('toggle-theme').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('tema', isDark ? 'oscuro' : 'claro');
+  document.getElementById('toggle-theme').innerText = isDark ? '☀️' : '🌙';
+});
+function aplicarTemaGuardado() {
+  const tema = localStorage.getItem('tema');
+  if (tema === 'oscuro') {
+    document.body.classList.add('dark');
+    document.getElementById('toggle-theme').innerText = '☀️';
   }
-  mostrarRecetas(); // Actualiza la vista
+}
+
+// Login/Logout
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await auth.signInWithPopup(provider);
+  } catch (e) {
+    alert('Error al iniciar sesión: ' + e.message);
+  }
+});
+document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+
+// Escuchar cambios de sesión
+auth.onAuthStateChanged(async user => {
+  usuarioActual = user;
+  esAdmin = user && user.email === adminEmail;
+  document.getElementById('login-btn').style.display = user ? 'none' : '';
+  document.getElementById('logout-btn').style.display = user ? '' : 'none';
+  document.querySelector('.agregar-btn').style.display = esAdmin ? '' : 'none';
+
+  if (user) {
+    document.getElementById('saludo').innerText = `Hola, ${user.displayName || user.email}`;
+    await cargarFavoritos();
+    await cargarPlanificador();
+    await generarListaCompras();
+  } else {
+    document.getElementById('saludo').innerText = '';
+    favoritos = [];
+  }
+
+  await cargarRecetas();
 });
 
-// Función para iniciar sesión (login simple con Google)
-document.getElementById('login-btn').onclick = () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err => alert('Error al iniciar sesión: ' + err.message));
-};
+// CRUD Recetas
+async function cargarRecetas() {
+  try {
+    const snap = await db.collection('recetas').get();
+    recetas = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    mostrarRecetas();
+  } catch (e) {
+    console.error('Error cargando recetas:', e);
+  }
+}
 
-// Función para cerrar sesión
-document.getElementById('logout-btn').onclick = () => auth.signOut();
+async function guardarReceta() {
+  const titulo = document.getElementById('titulo').value.trim();
+  const ingredientes = document.getElementById('ingredientes').value.trim();
+  const tiempo = document.getElementById('tiempo').value.trim();
+  const imagen = document.getElementById('imagen').value.trim();
+  const preparacion = document.getElementById('preparacion').value.trim();
+  const categoria = document.getElementById('categoria').value;
 
-// Alternar tema claro/oscuro
-document.getElementById('toggle-theme').onclick = () => {
-  document.body.classList.toggle('dark');
-};
+  if (!titulo || !ingredientes || !tiempo || !preparacion || !categoria) {
+    alert('Completa todos los campos.');
+    return;
+  }
 
-// Mostrar formulario modal para agregar receta
+  try {
+    if (recetaEnEdicion) {
+      await db.collection('recetas').doc(recetaEnEdicion)
+        .update({ titulo, ingredientes, tiempo, imagen, preparacion, categoria });
+    } else {
+      await db.collection('recetas').add({ titulo, ingredientes, tiempo, imagen, preparacion, categoria });
+    }
+    cerrarFormulario();
+    await cargarRecetas();
+  } catch (e) {
+    alert('Error guardando receta: ' + e.message);
+  }
+}
+
+async function eliminarReceta(id) {
+  if (!confirm('¿Eliminar receta?')) return;
+  try {
+    await db.collection('recetas').doc(id).delete();
+    await cargarRecetas();
+    await cargarPlanificador();
+    await generarListaCompras();
+  } catch (e) {
+    alert('Error eliminando receta: ' + e.message);
+  }
+}
+
+function editarReceta(id) {
+  const r = recetas.find(r => r.id === id);
+  if (!r) return;
+  document.getElementById('form-title').innerText = 'Editar Receta';
+  document.getElementById('titulo').value = r.titulo;
+  document.getElementById('ingredientes').value = r.ingredientes;
+  document.getElementById('tiempo').value = r.tiempo;
+  document.getElementById('imagen').value = r.imagen;
+  document.getElementById('preparacion').value = r.preparacion;
+  document.getElementById('categoria').value = r.categoria;
+  recetaEnEdicion = r.id;
+  mostrarFormulario();
+}
+
+// Mostrar recetas
+function mostrarRecetas() {
+  const cont = document.getElementById('recetas'); cont.innerHTML = '';
+  const txt = document.getElementById('busqueda').value.toLowerCase();
+  const cat = document.getElementById('filtroCategoria').value;
+  const verFav = document.getElementById('verFavoritos').checked;
+
+  let filtradas = recetas.filter(r =>
+    (!txt || r.titulo.toLowerCase().includes(txt) || r.ingredientes.toLowerCase().includes(txt)) &&
+    (!cat || r.categoria === cat)
+  );
+  if (verFav) filtradas = filtradas.filter(r => favoritos.includes(r.id));
+
+  if (filtradas.length === 0) cont.innerHTML = '<p>No se encontraron recetas.</p>';
+  filtradas.forEach(r => {
+    const c = document.createElement('div'); c.className = 'card';
+    c.innerHTML = `
+      <img src="${r.imagen || 'https://via.placeholder.com/150'}" alt="">
+      <h3>${r.titulo}</h3>
+      <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
+      <p><strong>Preparación:</strong> ${r.preparacion}</p>
+      <p>⏱ ${r.tiempo}</p>
+      <button onclick="toggleFavorito('${r.id}')">
+        ${favoritos.includes(r.id) ? '❤️ Quitar' : '🤍 Favorito'}
+      </button>
+      ${usuarioActual ? `
+        <button onclick="mostrarModalDia('${r.id}')">📆 Agendar</button>
+        <button onclick="compartir('${r.titulo}')">🔗 Compartir</button>
+        ${esAdmin ? `<button onclick="editarReceta('${r.id}')">✏️ Editar</button>
+        <button onclick="eliminarReceta('${r.id}')">🗑️ Eliminar</button>` : '' }
+      ` : ''}
+    `;
+    cont.appendChild(c);
+  });
+}
+
+// Favoritos
+async function toggleFavorito(id) {
+  if (!usuarioActual) {
+    alert('Debes iniciar sesión para usar favoritos.');
+    return;
+  }
+  const ref = db.collection('usuarios').doc(usuarioActual.uid);
+  const doc = await ref.get();
+  let favs = (doc.exists && doc.data().favoritos) || [];
+  const esFav = favs.includes(id);
+  try {
+    if (esFav) {
+      await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(id) });
+    } else {
+      await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge: true });
+    }
+    await cargarFavoritos();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+async function cargarFavoritos() {
+  if (!usuarioActual) { favoritos=[]; return; }
+  const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
+  favoritos = (doc.exists && doc.data().favoritos) || [];
+  mostrarRecetas();
+}
+
+// Mostrar modales
 function mostrarFormulario() {
-  recetaEditandoId = null;
-  document.getElementById('form-title').innerText = 'Agregar Receta';
-  document.getElementById('titulo').value = '';
-  document.getElementById('ingredientes').value = '';
-  document.getElementById('tiempo').value = '';
-  document.getElementById('imagen').value = '';
-  document.getElementById('preparacion').value = '';
-  document.getElementById('categoria').value = '';
   document.getElementById('formulario').style.display = 'block';
 }
-
-// Cerrar formulario modal
 function cerrarFormulario() {
   document.getElementById('formulario').style.display = 'none';
+  recetaEnEdicion = null;
 }
-
-// Guardar receta (nueva o editar)
-function guardarReceta() {
-  const datos = {
-    titulo: document.getElementById('titulo').value,
-    ingredientes: document.getElementById('ingredientes').value,
-    tiempo: document.getElementById('tiempo').value,
-    imagen: document.getElementById('imagen').value,
-    preparacion: document.getElementById('preparacion').value,
-    categoria: document.getElementById('categoria').value,
-    uid: usuarioActual ? usuarioActual.uid : null,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  if (recetaEditandoId) {
-    // Editar
-    db.collection('recetas').doc(recetaEditandoId).update(datos).then(() => {
-      cerrarFormulario();
-      mostrarRecetas();
-    });
-  } else {
-    // Nueva
-    db.collection('recetas').add(datos).then(() => {
-      cerrarFormulario();
-      mostrarRecetas();
-    });
-  }
-}
-
-// Mostrar recetas aplicando búsqueda y filtros
-function mostrarRecetas() {
-  let query = db.collection('recetas').orderBy('timestamp', 'desc');
-  const filtroCat = document.getElementById('filtroCategoria').value;
-  const soloFavs = document.getElementById('verFavoritos').checked;
-  const buscar = document.getElementById('busqueda').value.toLowerCase();
-
-  query.get().then(snapshot => {
-    let html = '';
-    snapshot.forEach(doc => {
-      const receta = doc.data();
-      receta.id = doc.id;
-
-      // Filtrar por categoría
-      if (filtroCat && receta.categoria !== filtroCat) return;
-
-      // Filtrar favoritos (simple, por ejemplo por UID del usuario)
-      if (soloFavs && receta.uid !== (usuarioActual ? usuarioActual.uid : '')) return;
-
-      // Buscar por título
-      if (buscar && !receta.titulo.toLowerCase().includes(buscar)) return;
-
-      html += `
-      <div class="card">
-        <img src="${receta.imagen || 'img/default.jpg'}" alt="">
-        <h3>${receta.titulo}</h3>
-        <p><strong>Categoría:</strong> ${receta.categoria}</p>
-        <p>${receta.tiempo}</p>
-        <button onclick="editarReceta('${receta.id}')">✏️ Editar</button>
-        <button onclick="eliminarReceta('${receta.id}')">🗑️ Eliminar</button>
-        <button onclick="abrirModalDia('${receta.id}')">📅 Agendar</button>
-      </div>`;
-    });
-    document.getElementById('recetas').innerHTML = html;
-  });
-}
-
-// Editar receta (llenar formulario con datos)
-function editarReceta(id) {
-  recetaEditandoId = id;
-  db.collection('recetas').doc(id).get().then(doc => {
-    const receta = doc.data();
-    document.getElementById('form-title').innerText = 'Editar Receta';
-    document.getElementById('titulo').value = receta.titulo;
-    document.getElementById('ingredientes').value = receta.ingredientes;
-    document.getElementById('tiempo').value = receta.tiempo;
-    document.getElementById('imagen').value = receta.imagen;
-    document.getElementById('preparacion').value = receta.preparacion;
-    document.getElementById('categoria').value = receta.categoria;
-    document.getElementById('formulario').style.display = 'block';
-  });
-}
-
-// Eliminar receta
-function eliminarReceta(id) {
-  if (confirm('¿Seguro que deseas eliminar esta receta?')) {
-    db.collection('recetas').doc(id).delete().then(mostrarRecetas);
-  }
-}
-
-// Mostrar modal para seleccionar días
-function abrirModalDia(idReceta) {
-  document.getElementById('modal-dia').dataset.idReceta = idReceta;
+function mostrarModalDia(id) {
+  recetaAAgendar = id;
   document.getElementById('modal-dia').style.display = 'block';
 }
-
-// Cerrar modal días
 function cerrarModalDia() {
   document.getElementById('modal-dia').style.display = 'none';
+  recetaAAgendar = null;
+  document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
 
-// Agendar en días seleccionados
-function agendarEnDias() {
-  const idReceta = document.getElementById('modal-dia').dataset.idReceta;
-  const dias = Array.from(document.querySelectorAll('#modal-dia input[type=checkbox]:checked')).map(cb => cb.value);
-  dias.forEach(dia => {
-    db.collection('planificador').add({
-      dia, idReceta, uid: usuarioActual.uid
-    });
-  });
-  cerrarModalDia();
-}
+// NUEVO: mostrar planificador en modal
+async function mostrarPlanificador() {
+  if (!usuarioActual) {
+    alert('Inicia sesión para ver tu planificador.');
+    return;
+  }
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    const datos = doc.exists ? doc.data() : {};
+    let html = '';
 
-// Mostrar planificador semanal
-function mostrarPlanificador() {
-  document.getElementById('modal-planificador').style.display = 'block';
-  db.collection('planificador').where('uid', '==', usuarioActual.uid).get().then(async snapshot => {
-    let html = `<div id="print-area"><img src="img/logo.negro.png" class="print-logo"><h2 class="print-title">Mi Planificador Semanal</h2>`;
-    for (const doc of snapshot.docs) {
-      const item = doc.data();
-      const recetaDoc = await db.collection('recetas').doc(item.idReceta).get();
-      if (recetaDoc.exists) {
-        const receta = recetaDoc.data();
-        html += `
-        <div class="print-day">${item.dia}</div>
-        <div class="print-category">${receta.categoria}</div>
-        <p>${receta.titulo}</p>
-        <button onclick="eliminarPlanificacion('${doc.id}')">Eliminar</button>`;
-      }
-    }
-    html += `</div><button onclick="imprimirLista()">🖨️ Imprimir</button> <button onclick="descargarPDF()">📥 Descargar PDF</button>`;
-    document.getElementById('modal-planificador-content').innerHTML = html;
-  });
-}
+    const diasConRecetas = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+      .filter(dia => datos[dia] && datos[dia].length > 0);
 
-// Eliminar elemento del planificador
-function eliminarPlanificacion(id) {
-  db.collection('planificador').doc(id).delete().then(mostrarPlanificador);
-}
-
-// Cerrar modal planificador
-function cerrarModalPlanificador() {
-  document.getElementById('modal-planificador').style.display = 'none';
-}
-
-// Mostrar lista de compras (ingredientes)
-function mostrarListaCompras() {
-  document.getElementById('modal-lista').style.display = 'block';
-  db.collection('recetas').where('uid', '==', usuarioActual.uid).get().then(snapshot => {
-    let html = `<div id="print-area"><img src="img/logo.negro.png" class="print-logo"><h2 class="print-title">Lista de Compras</h2><ul>`;
-    snapshot.forEach(doc => {
-      const receta = doc.data();
-      receta.ingredientes.split(',').forEach(ing => {
-        html += `<li>${ing.trim()}</li>`;
+    if (diasConRecetas.length === 0) {
+      html = '<p>No tienes recetas planificadas aún.</p>';
+    } else {
+      diasConRecetas.forEach(dia => {
+        html += `<div class="print-day">${dia}</div>`;
+        datos[dia].forEach(id => {
+          const r = recetas.find(rec => rec.id === id);
+          if (r) {
+            html += `<p><span class="print-category"><strong>${r.categoria}</strong></span> - ${r.titulo} 
+              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
+          } else {
+            html += `<p>(Receta eliminada)
+              <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
+          }
+        });
       });
+    }
+    document.getElementById('modal-planificador-content').innerHTML = `
+      ${html}
+      <button onclick="imprimirContenido('modal-planificador-content')">🖨️ Imprimir</button>
+      <button onclick="descargarPDF('modal-planificador-content', 'planificador.pdf')">⬇️ Descargar PDF</button>
+    `;
+    document.getElementById('modal-planificador').style.display = 'block';
+  } catch (e) {
+    console.error('Error cargando planificador:', e);
+    alert('Error al cargar el planificador.');
+  }
+}
+
+// NUEVO: mostrar lista de compras en modal
+async function mostrarListaCompras() {
+  if (!usuarioActual) {
+    alert('Inicia sesión para ver la lista de compras.');
+    return;
+  }
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    const datos = doc.exists ? doc.data() : {};
+
+    const ingredientesTotales = {};
+
+    Object.values(datos).flat().forEach(id => {
+      const r = recetas.find(rec => rec.id === id);
+      if (r) {
+        r.ingredientes.split(',').forEach(ing => {
+          const clave = ing.trim().toLowerCase();
+          if (!clave) return;
+          if (ingredientesTotales[clave]) {
+            ingredientesTotales[clave] += 1;
+          } else {
+            ingredientesTotales[clave] = 1;
+          }
+        });
+      }
     });
-    html += `</ul></div><button onclick="imprimirLista()">🖨️ Imprimir</button> <button onclick="descargarPDF()">📥 Descargar PDF</button>`;
-    document.getElementById('modal-lista-content').innerHTML = html;
-  });
+
+    let html = '<ul>';
+    Object.entries(ingredientesTotales).forEach(([ing, cant]) => {
+      html += `<li>${cant > 1 ? cant + ' x ' : ''}${ing}</li>`;
+    });
+    html += '</ul>';
+
+    if (Object.keys(ingredientesTotales).length === 0) {
+      html = '<p>No hay ingredientes planificados aún.</p>';
+    }
+
+    document.getElementById('modal-lista-content').innerHTML = `
+      ${html}
+      <button onclick="imprimirContenido('modal-lista-content')">🖨️ Imprimir</button>
+      <button onclick="descargarPDF('modal-lista-content', 'lista_compras.pdf')">⬇️ Descargar PDF</button>
+    `;
+    document.getElementById('modal-lista').style.display = 'block';
+  } catch (e) {
+    console.error('Error generando lista:', e);
+    alert('Error al generar lista de compras.');
+  }
 }
 
-// Cerrar modal lista
-function cerrarModalLista() {
-  document.getElementById('modal-lista').style.display = 'none';
+// NUEVO: imprimir
+function imprimirContenido(id) {
+  const contenido = document.getElementById(id).innerHTML;
+  const logo = '<img src="img/logo.negro.png" class="print-logo">';
+  const titulo = '<div class="print-title">Lista Semanal</div>';
+  const win = window.open('', '', 'height=600,width=800');
+  win.document.write('<html><head><title>Imprimir</title>');
+  win.document.write('<link rel="stylesheet" href="style.css">');
+  win.document.write('</head><body id="print-area">');
+  win.document.write('<div style="text-align:center;">'+logo+'</div>' + titulo + contenido);
+  win.document.write('</body></html>');
+  win.document.close();
+  win.print();
 }
 
-// Imprimir área con logo y título
-function imprimirLista() {
-  window.print();
-}
-
-// Descargar PDF (simple, genera PDF de #print-area)
-function descargarPDF() {
-  const area = document.getElementById('print-area').outerHTML;
-  const blob = new Blob([area], {type: 'text/html'});
+// NUEVO: descargar como PDF corregido
+function descargarPDF(id, filename) {
+  const contenido = document.getElementById(id).innerHTML;
+  const logo = '<img src="img/logo.negro.png" class="print-logo">';
+  const titulo = '<div class="print-title">Lista Semanal</div>';
+  const blob = new Blob([`<html><head><link rel="stylesheet" href="style.css"></head><body>${logo}${titulo}${contenido}</body></html>`], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'lista.html';
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-// Al hacer clic en 🏠 scroll al inicio
+// NUEVO: cerrar modales
+function cerrarModalPlanificador() {
+  document.getElementById('modal-planificador').style.display = 'none';
+}
+function cerrarModalLista() {
+  document.getElementById('modal-lista').style.display = 'none';
+}
+
+// AGENDAR EN DIAS
+async function agendarEnDias() {
+  if (!usuarioActual) {
+    alert('Debes iniciar sesión para agendar.');
+    return;
+  }
+  const diasSeleccionados = Array.from(document.querySelectorAll('#modal-dia input[type="checkbox"]:checked'))
+    .map(cb => cb.value);
+  if (diasSeleccionados.length === 0) {
+    alert('Selecciona al menos un día.');
+    return;
+  }
+
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    let datos = doc.exists ? doc.data() : {};
+
+    diasSeleccionados.forEach(dia => {
+      if (!datos[dia]) datos[dia] = [];
+      if (!datos[dia].includes(recetaAAgendar)) datos[dia].push(recetaAAgendar);
+    });
+
+    await ref.set(datos);
+    cerrarModalDia();
+    await mostrarPlanificador();
+  } catch (e) {
+    alert('Error al agendar: ' + e.message);
+  }
+}
+
+// COMPARTIR
+function compartir(titulo) {
+  const url = window.location.href;
+  const texto = `Mira esta receta: ${titulo} - ${url}`;
+  if (navigator.share) {
+    navigator.share({
+      title: titulo,
+      text: texto,
+      url: url
+    }).catch(e => console.error('Error al compartir:', e));
+  } else {
+    navigator.clipboard.writeText(texto).then(() => {
+      alert('Enlace copiado al portapapeles');
+    }).catch(e => {
+      alert('No se pudo copiar: ' + e.message);
+    });
+  }
+}
+function mostrarFavoritos() {
+  document.getElementById('verFavoritos').checked = true;
+  mostrarRecetas();
+}
+// Volver al inicio corregido
 function mostrarTodasRecetas() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// Inicial
+aplicarTemaGuardado();
+cargarRecetas();
