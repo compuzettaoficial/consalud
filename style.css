@@ -126,15 +126,6 @@ body.dark .modal-content { background: #333; color: #eee; }
 /* Día en negrita y color */
 .print-day { margin-top: 4px; font-weight: bold; color: #4CAF50; }
 
-/* Botón quitar más discreto */
-.modal-body button { font-size:0.8rem; padding:4px 8px; }
-
-/* Logo en impresión */
-.print-logo { display: block; margin: 0 auto; height: 60px; }
-
-/* Título en impresión */
-.print-title { text-align: center; font-size: 1.5rem; margin: 10px 0; color: #000; }
-
 .bottom-bar {
   position: fixed; bottom: 0; left: 0;
   width: 100%; background: #fff;
@@ -147,6 +138,20 @@ body.dark .modal-content { background: #333; color: #eee; }
   transition: color 0.3s;
 }
 .bottom-bar button:hover { color: #111; }
+
+/* Logo en impresión */
+.print-logo { display: block; margin: 0 auto; height: 60px; }
+
+/* Título en impresión */
+.print-title { text-align: center; font-size: 1.5rem; margin: 10px 0; color: #000; }
+
+/* Favicon ajuste */
+link[rel="icon"] { height: 32px; }
+
+/* Ajuste favoritos cerca del buscador */
+label[for="verFavoritos"], #busqueda, #filtroCategoria {
+  margin-bottom: 0;
+}
 
 /* Estilos para impresión */
 @media print {
