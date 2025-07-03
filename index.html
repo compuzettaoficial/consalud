@@ -10,11 +10,11 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-<!-- Barra superior fija con logo, saludo y botones -->
+<!-- Barra superior fija con logo y botones -->
 <div class="topbar">
   <div style="display:flex; align-items:center;">
     <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
-    <div id="saludo"></div>
+    <div id="saludo"></div> <!-- Saludo personalizado -->
   </div>
   <div class="topbar-buttons">
     <button id="login-btn">Iniciar Sesión</button>
@@ -49,7 +49,8 @@
   <div id="recetas"></div>
 </div>
 
-<!-- Modal para seleccionar días del planificador -->
+<!-- Modales para funcionalidades -->
+<!-- Modal para seleccionar días -->
 <div id="modal-dia" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -69,7 +70,7 @@
   </div>
 </div>
 
-<!-- Modal para agregar o editar receta -->
+<!-- Modal para agregar/editar recetas -->
 <div id="formulario" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -96,7 +97,7 @@
   </div>
 </div>
 
-<!-- Modal del planificador semanal -->
+<!-- Modal planificador -->
 <div id="modal-planificador" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -107,7 +108,7 @@
   </div>
 </div>
 
-<!-- Modal de lista de compras -->
+<!-- Modal lista de compras -->
 <div id="modal-lista" class="modal">
   <div class="modal-content">
     <div class="modal-header">
