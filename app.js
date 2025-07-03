@@ -216,11 +216,11 @@ async function mostrarPlanificador() {
       html = '<p>No tienes recetas planificadas aún.</p>';
     } else {
       diasConRecetas.forEach(dia => {
-        html += `<h4>${dia}</h4>`;
+        html += `<div class="print-day">${dia}</div>`;
         datos[dia].forEach(id => {
           const r = recetas.find(rec => rec.id === id);
           if (r) {
-            html += `<p>${r.categoria} - ${r.titulo} 
+            html += `<p><span class="print-category"><strong>${r.categoria}</strong></span> - ${r.titulo} 
               <button onclick="quitarDeDia('${dia}', '${id}')">🗑️ Quitar</button></p>`;
           } else {
             html += `<p>(Receta eliminada)
@@ -294,18 +294,24 @@ async function mostrarListaCompras() {
 // NUEVO: imprimir
 function imprimirContenido(id) {
   const contenido = document.getElementById(id).innerHTML;
+  const logo = '<img src="img/logo.negro.png" class="print-logo">';
+  const titulo = '<div class="print-title">Lista Semanal</div>';
   const win = window.open('', '', 'height=600,width=800');
-  win.document.write('<html><head><title>Imprimir</title></head><body>');
-  win.document.write(contenido);
+  win.document.write('<html><head><title>Imprimir</title>');
+  win.document.write('<link rel="stylesheet" href="style.css">');
+  win.document.write('</head><body id="print-area">');
+  win.document.write('<div style="text-align:center;">'+logo+'</div>' + titulo + contenido);
   win.document.write('</body></html>');
   win.document.close();
   win.print();
 }
 
-// NUEVO: descargar como PDF
+// NUEVO: descargar como PDF corregido
 function descargarPDF(id, filename) {
   const contenido = document.getElementById(id).innerHTML;
-  const blob = new Blob([contenido], { type: 'text/html' });
+  const logo = '<img src="img/logo.negro.png" class="print-logo">';
+  const titulo = '<div class="print-title">Lista Semanal</div>';
+  const blob = new Blob([`<html><head><link rel="stylesheet" href="style.css"></head><body>${logo}${titulo}${contenido}</body></html>`], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -375,24 +381,9 @@ function mostrarFavoritos() {
   document.getElementById('verFavoritos').checked = true;
   mostrarRecetas();
 }
-// Volver al inicio
+// Volver al inicio corregido
 function mostrarTodasRecetas() {
-  document.getElementById('recetas').scrollIntoView({ behavior: 'smooth' });
-}
-
-// Modificar imprimirContenido para incluir logo y títulos
-function imprimirContenido(id) {
-  const contenido = document.getElementById(id).innerHTML;
-  const logo = '<img src="img/logo.png" class="print-logo">';
-  const titulo = '<div class="print-title">Lista Semanal</div>';
-  const win = window.open('', '', 'height=600,width=800');
-  win.document.write('<html><head><title>Imprimir</title>');
-  win.document.write('<link rel="stylesheet" href="style.css">');
-  win.document.write('</head><body id="print-area">');
-  win.document.write(logo + titulo + contenido);
-  win.document.write('</body></html>');
-  win.document.close();
-  win.print();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Inicial
