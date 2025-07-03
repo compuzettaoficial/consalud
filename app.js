@@ -1,10 +1,11 @@
-let recetas = [];
+let recetas = []; 
 let planificador = {};
 let recetaAAgendar = null;
 let recetaEnEdicion = null;
 let usuarioActual = null;
 let esAdmin = false;
 let favoritos = [];
+let mostrandoFavoritos = false; // NUEVO: para alternar
 
 // Tema claro/oscuro
 document.getElementById('toggle-theme').addEventListener('click', () => {
@@ -21,18 +22,15 @@ function aplicarTemaGuardado() {
   }
 }
 
-// Login/Logout
+// Login / Logout
 document.getElementById('login-btn').addEventListener('click', async () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  try {
-    await auth.signInWithPopup(provider);
-  } catch (e) {
-    alert('Error al iniciar sesión: ' + e.message);
-  }
+  try { await auth.signInWithPopup(provider); }
+  catch (e) { alert('Error al iniciar sesión: ' + e.message); }
 });
 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
 
-// Escuchar cambios de sesión
+// Escuchar sesión
 auth.onAuthStateChanged(async user => {
   usuarioActual = user;
   esAdmin = user && user.email === adminEmail;
@@ -48,7 +46,6 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('saludo').innerText = '';
     favoritos = [];
   }
-
   await cargarRecetas();
 });
 
@@ -62,7 +59,6 @@ async function cargarRecetas() {
     console.error('Error cargando recetas:', e);
   }
 }
-
 async function guardarReceta() {
   const titulo = document.getElementById('titulo').value.trim();
   const ingredientes = document.getElementById('ingredientes').value.trim();
@@ -70,12 +66,10 @@ async function guardarReceta() {
   const imagen = document.getElementById('imagen').value.trim();
   const preparacion = document.getElementById('preparacion').value.trim();
   const categoria = document.getElementById('categoria').value;
-
   if (!titulo || !ingredientes || !tiempo || !preparacion || !categoria) {
     alert('Completa todos los campos.');
     return;
   }
-
   try {
     if (recetaEnEdicion) {
       await db.collection('recetas').doc(recetaEnEdicion)
@@ -89,13 +83,12 @@ async function guardarReceta() {
     alert('Error guardando receta: ' + e.message);
   }
 }
-
 async function eliminarReceta(id) {
   if (!confirm('¿Eliminar receta?')) return;
   try {
     await db.collection('recetas').doc(id).delete();
 
-    // Eliminar también del planificador
+    // Eliminar del planificador
     const ref = db.collection('planificadores').doc(usuarioActual.uid);
     const doc = await ref.get();
     if (doc.exists) {
@@ -105,14 +98,12 @@ async function eliminarReceta(id) {
       }
       await ref.set(datos);
     }
-
     await cargarRecetas();
     await cargarPlanificador();
   } catch (e) {
     alert('Error eliminando receta: ' + e.message);
   }
 }
-
 function editarReceta(id) {
   const r = recetas.find(r => r.id === id);
   if (!r) return;
@@ -132,14 +123,11 @@ function mostrarRecetas() {
   const cont = document.getElementById('recetas'); cont.innerHTML = '';
   const txt = document.getElementById('busqueda').value.toLowerCase();
   const cat = document.getElementById('filtroCategoria').value;
-  const verFav = document.getElementById('verFavoritos').checked;
-
   let filtradas = recetas.filter(r =>
     (!txt || r.titulo.toLowerCase().includes(txt) || r.ingredientes.toLowerCase().includes(txt)) &&
     (!cat || r.categoria === cat)
   );
-  if (verFav) filtradas = filtradas.filter(r => favoritos.includes(r.id));
-
+  if (mostrandoFavoritos) filtradas = filtradas.filter(r => favoritos.includes(r.id));
   if (filtradas.length === 0) cont.innerHTML = '<p>No se encontraron recetas.</p>';
   filtradas.forEach(r => {
     const c = document.createElement('div'); c.className = 'card';
@@ -162,7 +150,6 @@ function mostrarRecetas() {
     cont.appendChild(c);
   });
 }
-
 // Favoritos
 async function toggleFavorito(id) {
   if (!usuarioActual) {
@@ -189,7 +176,13 @@ async function cargarFavoritos() {
   mostrarRecetas();
 }
 
-// Mostrar modales
+// NUEVO: Botón favoritos abajo (barra inferior)
+document.getElementById('btn-favoritos').addEventListener('click', () => {
+  mostrandoFavoritos = !mostrandoFavoritos;
+  mostrarRecetas();
+});
+
+// Modales
 function mostrarFormulario() {
   document.getElementById('formulario').style.display = 'block';
 }
@@ -234,26 +227,19 @@ function descargarPDF(id, filename) {
   URL.revokeObjectURL(url);
 }
 
-// COMPARTIR corregido: solo logueado, comparte link a receta
+// Compartir SOLO receta
 function compartir(id) {
   if (!usuarioActual) {
     alert('Debes iniciar sesión para compartir.');
     return;
   }
-  const url = `${window.location.href}#receta-${id}`;
+  const url = `${window.location.origin}${window.location.pathname}#receta-${id}`;
   const texto = `Mira esta receta: ${url}`;
   if (navigator.share) {
     navigator.share({ title: 'Receta', text: texto, url }).catch(e => console.error(e));
   } else {
     navigator.clipboard.writeText(texto).then(() => alert('Enlace copiado')).catch(e => alert('Error: ' + e.message));
   }
-}
-function mostrarFavoritos() {
-  document.getElementById('verFavoritos').checked = true;
-  mostrarRecetas();
-}
-function mostrarTodasRecetas() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Inicial
