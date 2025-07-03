@@ -13,6 +13,7 @@ document.getElementById('toggle-theme').addEventListener('click', () => {
   localStorage.setItem('tema', isDark ? 'oscuro' : 'claro');
   document.getElementById('toggle-theme').innerText = isDark ? '☀️' : '🌙';
 });
+
 function aplicarTemaGuardado() {
   const tema = localStorage.getItem('tema');
   if (tema === 'oscuro') {
@@ -30,6 +31,7 @@ document.getElementById('login-btn').addEventListener('click', async () => {
     alert('Error al iniciar sesión: ' + e.message);
   }
 });
+
 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
 
 // Escuchar cambios de sesión
@@ -48,6 +50,7 @@ auth.onAuthStateChanged(async user => {
   } else {
     document.getElementById('saludo').innerText = '';
     favoritos = [];
+    planificador = {};
   }
 
   await cargarRecetas();
@@ -119,7 +122,8 @@ function editarReceta(id) {
 
 // Mostrar recetas
 function mostrarRecetas() {
-  const cont = document.getElementById('recetas'); cont.innerHTML = '';
+  const cont = document.getElementById('recetas'); 
+  cont.innerHTML = '';
   const txt = document.getElementById('busqueda').value.toLowerCase();
   const cat = document.getElementById('filtroCategoria').value;
   const verFav = document.getElementById('verFavoritos').checked;
@@ -128,13 +132,19 @@ function mostrarRecetas() {
     (!txt || r.titulo.toLowerCase().includes(txt) || r.ingredientes.toLowerCase().includes(txt)) &&
     (!cat || r.categoria === cat)
   );
+  
   if (verFav) filtradas = filtradas.filter(r => favoritos.includes(r.id));
 
-  if (filtradas.length === 0) cont.innerHTML = '<p>No se encontraron recetas.</p>';
+  if (filtradas.length === 0) {
+    cont.innerHTML = '<p>No se encontraron recetas.</p>';
+    return;
+  }
+
   filtradas.forEach(r => {
-    const c = document.createElement('div'); c.className = 'card';
+    const c = document.createElement('div'); 
+    c.className = 'card';
     c.innerHTML = `
-      <img src="${r.imagen || 'https://via.placeholder.com/150'}" alt="">
+      <img src="${r.imagen || 'https://via.placeholder.com/150'}" alt="${r.titulo}">
       <h3>${r.titulo}</h3>
       <p><strong>Ingredientes:</strong> ${r.ingredientes}</p>
       <p><strong>Preparación:</strong> ${r.preparacion}</p>
@@ -159,10 +169,12 @@ async function toggleFavorito(id) {
     alert('Debes iniciar sesión para usar favoritos.');
     return;
   }
+  
   const ref = db.collection('usuarios').doc(usuarioActual.uid);
   const doc = await ref.get();
   let favs = (doc.exists && doc.data().favoritos) || [];
   const esFav = favs.includes(id);
+  
   try {
     if (esFav) {
       await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(id) });
@@ -170,54 +182,131 @@ async function toggleFavorito(id) {
       await ref.set({ favoritos: firebase.firestore.FieldValue.arrayUnion(id) }, { merge: true });
     }
     await cargarFavoritos();
-  } catch (e) { alert('Error: ' + e.message); }
+  } catch (e) { 
+    alert('Error: ' + e.message); 
+  }
 }
+
 async function cargarFavoritos() {
-  if (!usuarioActual) { favoritos=[]; return; }
-  const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
-  favoritos = (doc.exists && doc.data().favoritos) || [];
-  mostrarRecetas();
+  if (!usuarioActual) { 
+    favoritos = []; 
+    return; 
+  }
+  
+  try {
+    const doc = await db.collection('usuarios').doc(usuarioActual.uid).get();
+    favoritos = (doc.exists && doc.data().favoritos) || [];
+    mostrarRecetas();
+  } catch (e) {
+    console.error('Error cargando favoritos:', e);
+  }
+}
+
+// FUNCIÓN FALTANTE: Cargar planificador
+async function cargarPlanificador() {
+  if (!usuarioActual) {
+    planificador = {};
+    return;
+  }
+  
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    planificador = doc.exists ? doc.data() : {};
+  } catch (e) {
+    console.error('Error cargando planificador:', e);
+    planificador = {};
+  }
+}
+
+// FUNCIÓN FALTANTE: Generar lista de compras
+async function generarListaCompras() {
+  if (!usuarioActual) return;
+  
+  try {
+    await cargarPlanificador();
+    // La lista se genera cuando se solicita en mostrarListaCompras()
+  } catch (e) {
+    console.error('Error generando lista de compras:', e);
+  }
+}
+
+// FUNCIÓN FALTANTE: Quitar receta de un día
+async function quitarDeDia(dia, recetaId) {
+  if (!usuarioActual) {
+    alert('Debes iniciar sesión.');
+    return;
+  }
+  
+  try {
+    const ref = db.collection('planificadores').doc(usuarioActual.uid);
+    const doc = await ref.get();
+    let datos = doc.exists ? doc.data() : {};
+    
+    if (datos[dia]) {
+      datos[dia] = datos[dia].filter(id => id !== recetaId);
+      if (datos[dia].length === 0) {
+        delete datos[dia];
+      }
+    }
+    
+    await ref.set(datos);
+    await cargarPlanificador();
+    await mostrarPlanificador(); // Actualizar el modal
+  } catch (e) {
+    alert('Error al quitar receta: ' + e.message);
+  }
 }
 
 // Mostrar modales
 function mostrarFormulario() {
   document.getElementById('formulario').style.display = 'block';
 }
+
 function cerrarFormulario() {
   document.getElementById('formulario').style.display = 'none';
+  document.getElementById('form-title').innerText = 'Agregar Receta'; // CORREGIDO: Resetear título
+  // CORREGIDO: Limpiar campos del formulario
+  document.getElementById('titulo').value = '';
+  document.getElementById('ingredientes').value = '';
+  document.getElementById('tiempo').value = '';
+  document.getElementById('imagen').value = '';
+  document.getElementById('preparacion').value = '';
+  document.getElementById('categoria').value = '';
   recetaEnEdicion = null;
 }
+
 function mostrarModalDia(id) {
   recetaAAgendar = id;
   document.getElementById('modal-dia').style.display = 'block';
 }
+
 function cerrarModalDia() {
   document.getElementById('modal-dia').style.display = 'none';
   recetaAAgendar = null;
   document.querySelectorAll('#modal-dia input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
 
-// NUEVO: mostrar planificador en modal
+// Mostrar planificador en modal
 async function mostrarPlanificador() {
   if (!usuarioActual) {
     alert('Inicia sesión para ver tu planificador.');
     return;
   }
+  
   try {
-    const ref = db.collection('planificadores').doc(usuarioActual.uid);
-    const doc = await ref.get();
-    const datos = doc.exists ? doc.data() : {};
+    await cargarPlanificador(); // CORREGIDO: Asegurar que se carguen los datos
+    
     let html = '';
-
     const diasConRecetas = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
-      .filter(dia => datos[dia] && datos[dia].length > 0);
+      .filter(dia => planificador[dia] && planificador[dia].length > 0);
 
     if (diasConRecetas.length === 0) {
       html = '<p>No tienes recetas planificadas aún.</p>';
     } else {
       diasConRecetas.forEach(dia => {
         html += `<div class="print-day">${dia}</div>`;
-        datos[dia].forEach(id => {
+        planificador[dia].forEach(id => {
           const r = recetas.find(rec => rec.id === id);
           if (r) {
             html += `<p><span class="print-category"><strong>${r.categoria}</strong></span> - ${r.titulo} 
@@ -229,6 +318,7 @@ async function mostrarPlanificador() {
         });
       });
     }
+    
     document.getElementById('modal-planificador-content').innerHTML = `
       ${html}
       <button onclick="imprimirContenido('modal-planificador-content')">🖨️ Imprimir</button>
@@ -241,20 +331,19 @@ async function mostrarPlanificador() {
   }
 }
 
-// NUEVO: mostrar lista de compras en modal
+// Mostrar lista de compras en modal
 async function mostrarListaCompras() {
   if (!usuarioActual) {
     alert('Inicia sesión para ver la lista de compras.');
     return;
   }
+  
   try {
-    const ref = db.collection('planificadores').doc(usuarioActual.uid);
-    const doc = await ref.get();
-    const datos = doc.exists ? doc.data() : {};
-
+    await cargarPlanificador(); // CORREGIDO: Asegurar que se carguen los datos
+    
     const ingredientesTotales = {};
 
-    Object.values(datos).flat().forEach(id => {
+    Object.values(planificador).flat().forEach(id => {
       const r = recetas.find(rec => rec.id === id);
       if (r) {
         r.ingredientes.split(',').forEach(ing => {
@@ -291,7 +380,7 @@ async function mostrarListaCompras() {
   }
 }
 
-// NUEVO: imprimir
+// Imprimir
 function imprimirContenido(id) {
   const contenido = document.getElementById(id).innerHTML;
   const logo = '<img src="img/logo.negro.png" class="print-logo">';
@@ -306,7 +395,7 @@ function imprimirContenido(id) {
   win.print();
 }
 
-// NUEVO: descargar como PDF corregido
+// Descargar como PDF
 function descargarPDF(id, filename) {
   const contenido = document.getElementById(id).innerHTML;
   const logo = '<img src="img/logo.negro.png" class="print-logo">';
@@ -320,22 +409,25 @@ function descargarPDF(id, filename) {
   URL.revokeObjectURL(url);
 }
 
-// NUEVO: cerrar modales
+// Cerrar modales
 function cerrarModalPlanificador() {
   document.getElementById('modal-planificador').style.display = 'none';
 }
+
 function cerrarModalLista() {
   document.getElementById('modal-lista').style.display = 'none';
 }
 
-// AGENDAR EN DIAS
+// Agendar en días
 async function agendarEnDias() {
   if (!usuarioActual) {
     alert('Debes iniciar sesión para agendar.');
     return;
   }
+  
   const diasSeleccionados = Array.from(document.querySelectorAll('#modal-dia input[type="checkbox"]:checked'))
     .map(cb => cb.value);
+    
   if (diasSeleccionados.length === 0) {
     alert('Selecciona al menos un día.');
     return;
@@ -352,17 +444,18 @@ async function agendarEnDias() {
     });
 
     await ref.set(datos);
+    await cargarPlanificador(); // CORREGIDO: Actualizar datos locales
     cerrarModalDia();
-    await mostrarPlanificador();
   } catch (e) {
     alert('Error al agendar: ' + e.message);
   }
 }
 
-// COMPARTIR
+// Compartir
 function compartir(titulo) {
   const url = window.location.href;
   const texto = `Mira esta receta: ${titulo} - ${url}`;
+  
   if (navigator.share) {
     navigator.share({
       title: titulo,
@@ -377,12 +470,18 @@ function compartir(titulo) {
     });
   }
 }
+
 function mostrarFavoritos() {
   document.getElementById('verFavoritos').checked = true;
   mostrarRecetas();
 }
-// Volver al inicio corregido
+
+// Volver al inicio
 function mostrarTodasRecetas() {
+  document.getElementById('verFavoritos').checked = false;
+  document.getElementById('busqueda').value = '';
+  document.getElementById('filtroCategoria').value = '';
+  mostrarRecetas();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
