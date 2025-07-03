@@ -117,17 +117,14 @@ body.dark .modal-content { background: #333; color: #eee; }
 
 .modal-body { padding: 12px; }
 
-/* Botón “Quitar” más discreto y botones del modal más pequeños */
-.modal-body button { font-size: 0.8rem; padding: 4px 8px; }
-
-/* Ajuste espacio entre listas del planificador */
-#modal-planificador-content p { margin: 2px 0; }
-
 /* Categoría en negrita */
 .print-category { font-weight: bold; }
 
 /* Día en negrita y color */
 .print-day { margin-top: 4px; font-weight: bold; color: #4CAF50; }
+
+/* Botón quitar más discreto */
+.modal-body button { font-size:0.8rem;padding:4px 8px; }
 
 .bottom-bar {
   position: fixed; bottom: 0; left: 0;
@@ -142,19 +139,12 @@ body.dark .modal-content { background: #333; color: #eee; }
 }
 .bottom-bar button:hover { color: #111; }
 
-/* Logo en impresión */
+/* Logo e impresión */
 .print-logo { display: block; margin: 0 auto; height: 60px; }
-
-/* Título en impresión */
 .print-title { text-align: center; font-size: 1.5rem; margin: 10px 0; color: #000; }
 
-/* Favicon ajuste */
-link[rel="icon"] { height: 32px; }
-
-/* Ajuste favoritos cerca del buscador */
-label[for="verFavoritos"], #busqueda, #filtroCategoria {
-  margin-bottom: 0;
-}
+/* Ajustes */
+label[for="verFavoritos"], #busqueda, #filtroCategoria { margin-bottom:0; }
 
 /* Estilos para impresión */
 @media print {
