@@ -10,6 +10,8 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+
+<!-- Barra superior fija con logo, saludo y botones -->
 <div class="topbar">
   <div style="display:flex; align-items:center;">
     <img src="img/logo.png" alt="Con Salud" class="logo" id="logo">
@@ -22,9 +24,12 @@
   </div>
 </div>
 
+<!-- Contenedor principal -->
 <div class="container">
   <h1>Recetas Saludables</h1>
   <button class="agregar-btn" style="display:none" onclick="mostrarFormulario()">+ Agregar Receta</button>
+
+  <!-- Buscador y filtros -->
   <input type="text" id="busqueda" placeholder="Buscar recetas..." oninput="mostrarRecetas()">
   <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
     <select id="filtroCategoria" onchange="mostrarRecetas()">
@@ -40,27 +45,9 @@
       <input type="checkbox" id="verFavoritos" onchange="mostrarRecetas()"> Favoritos
     </label>
   </div>
-  <div id="recetas"></div>
-</div>
 
-<!-- Modal para seleccionar días del planificador -->
-<div id="modal-dia" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Selecciona días para agendar:</h3>
-      <button class="close" onclick="cerrarModalDia()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <label><input type="checkbox" value="Lunes"> Lunes</label>
-      <label><input type="checkbox" value="Martes"> Martes</label>
-      <label><input type="checkbox" value="Miércoles"> Miércoles</label>
-      <label><input type="checkbox" value="Jueves"> Jueves</label>
-      <label><input type="checkbox" value="Viernes"> Viernes</label>
-      <label><input type="checkbox" value="Sábado"> Sábado</label>
-      <label><input type="checkbox" value="Domingo"> Domingo</label>
-      <button onclick="agendarEnDias()">Agendar</button>
-    </div>
-  </div>
+  <!-- Contenedor de tarjetas de recetas -->
+  <div id="recetas"></div>
 </div>
 
 <!-- Modal para agregar o editar receta -->
@@ -112,6 +99,26 @@
   </div>
 </div>
 
+<!-- Modal para seleccionar días del planificador -->
+<div id="modal-dia" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Selecciona días para agendar:</h3>
+      <button class="close" onclick="cerrarModalDia()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <label><input type="checkbox" value="Lunes"> Lunes</label>
+      <label><input type="checkbox" value="Martes"> Martes</label>
+      <label><input type="checkbox" value="Miércoles"> Miércoles</label>
+      <label><input type="checkbox" value="Jueves"> Jueves</label>
+      <label><input type="checkbox" value="Viernes"> Viernes</label>
+      <label><input type="checkbox" value="Sábado"> Sábado</label>
+      <label><input type="checkbox" value="Domingo"> Domingo</label>
+      <button onclick="agendarEnDias()">Agendar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Barra inferior fija -->
 <div class="bottom-bar">
   <button onclick="mostrarTodasRecetas()">🏠</button>
@@ -124,7 +131,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 <script src="firebase-config.js"></script>
 <script src="app.js"></script>
 </body>
