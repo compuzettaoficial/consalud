@@ -117,6 +117,9 @@ body.dark .modal-content { background: #333; color: #eee; }
 
 .modal-body { padding: 12px; }
 
+/* Botón “Quitar” más discreto y botones del modal más pequeños */
+.modal-body button { font-size: 0.8rem; padding: 4px 8px; }
+
 /* Ajuste espacio entre listas del planificador */
 #modal-planificador-content p { margin: 2px 0; }
 
