@@ -238,5 +238,126 @@
       });
     }
   </script>
+<script>
+// Bloquear herramientas de desarrollador
+(function() {
+  'use strict';
+
+  // Bloquear clic derecho
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Bloquear teclas de herramientas de desarrollador
+  document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.keyCode === 123) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Ctrl+Shift+I (Inspector)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Ctrl+Shift+J (Consola)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Ctrl+Shift+C (Inspector de elementos)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Ctrl+U (Ver código fuente)
+    if (e.ctrlKey && e.keyCode === 85) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Ctrl+S (Guardar página)
+    if (e.ctrlKey && e.keyCode === 83) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Ctrl+A (Seleccionar todo)
+    if (e.ctrlKey && e.keyCode === 65) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Ctrl+P (Imprimir)
+    if (e.ctrlKey && e.keyCode === 80) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Bloquear selección de texto
+  document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Bloquear arrastrar elementos
+  document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Detectar si las herramientas de desarrollador están abiertas
+  let devtools = {
+    open: false,
+    orientation: null
+  };
+
+  const threshold = 160;
+
+  setInterval(() => {
+    if (window.outerHeight - window.innerHeight > threshold || 
+        window.outerWidth - window.innerWidth > threshold) {
+      if (!devtools.open) {
+        devtools.open = true;
+        // Redirigir o mostrar mensaje
+        document.body.innerHTML = '<div style="text-align:center;margin-top:50px;font-family:Arial;"><h1>Acceso no permitido</h1><p>Esta página no permite el uso de herramientas de desarrollador.</p></div>';
+      }
+    } else {
+      devtools.open = false;
+    }
+  }, 500);
+
+  // Bloquear console.log y otras funciones de consola (opcional)
+  if (typeof console !== 'undefined') {
+    console.log = function() {};
+    console.warn = function() {};
+    console.error = function() {};
+    console.info = function() {};
+    console.debug = function() {};
+    console.clear = function() {};
+  }
+
+  // Detectar debugger
+  function detectDebugger() {
+    var before = new Date();
+    debugger;
+    var after = new Date();
+    if (after - before > 100) {
+      document.body.innerHTML = '<div style="text-align:center;margin-top:50px;font-family:Arial;"><h1>Acceso no permitido</h1><p>Esta página no permite el uso de herramientas de desarrollador.</p></div>';
+    }
+  }
+
+  // Ejecutar detección periódicamente
+  setInterval(detectDebugger, 1000);
+
+})();
+  </script>
 </body>
 </html>
+
