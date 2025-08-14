@@ -312,28 +312,7 @@
     return false;
   });
 
-  // Detectar si las herramientas de desarrollador están abiertas
-  let devtools = {
-    open: false,
-    orientation: null
-  };
-
-  const threshold = 160;
-
-  setInterval(() => {
-    if (window.outerHeight - window.innerHeight > threshold || 
-        window.outerWidth - window.innerWidth > threshold) {
-      if (!devtools.open) {
-        devtools.open = true;
-        // Redirigir o mostrar mensaje
-        document.body.innerHTML = '<div style="text-align:center;margin-top:50px;font-family:Arial;"><h1>Acceso no permitido</h1><p>comuníquese con el desarrollador.</p></div>';
-      }
-    } else {
-      devtools.open = false;
-    }
-  }, 500);
-
-  // Bloquear console.log y otras funciones de consola (opcional)
+  // Silenciosamente deshabilitar funciones de consola
   if (typeof console !== 'undefined') {
     console.log = function() {};
     console.warn = function() {};
@@ -343,22 +322,10 @@
     console.clear = function() {};
   }
 
-  // Detectar debugger
-  function detectDebugger() {
-    var before = new Date();
-    debugger;
-    var after = new Date();
-    if (after - before > 100) {
-      document.body.innerHTML = '<div style="text-align:center;margin-top:50px;font-family:Arial;"><h1>Acceso no permitido</h1><p>Esta página no permite el uso de herramientas de desarrollador.</p></div>';
-    }
-  }
-
-  // Ejecutar detección periódicamente
-  setInterval(detectDebugger, 1000);
-
 })();
   </script>
 </body>
 </html>
+
 
 
